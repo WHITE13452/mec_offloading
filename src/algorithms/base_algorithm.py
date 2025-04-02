@@ -65,7 +65,7 @@ class BaseAlgorithm(ABC):
         """评估解的适应度（目标函数值）"""
         pass
     
-    @abstractmethod
+    
     def update_solution(self, solution):
         """更新解"""
         pass

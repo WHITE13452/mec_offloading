@@ -167,24 +167,24 @@ def test_algorithms():
     algorithm_times['TLBO'] = time.time() - start_time
     algorithm_results['TLBO'] = (best_solution, best_fitness, history)
     
-    # 测试TLBO+
-    print("\n测试TLBO+算法...")
-    start_time = time.time()
-    tlbo_plus = TLBOPlus(
-        system_model=system,
-        delay_model=delay_model,
-        energy_model=energy_model,
-        aoi_model=aoi_model,
-        max_iter=max_iter,
-        population_size=population_size,
-        w_energy=0.5,
-        w_delay=0.3,
-        w_aoi=0.2,
-        verbose=True
-    )
-    best_solution_plus, best_fitness_plus, history_plus = tlbo_plus.optimize()
-    algorithm_times['TLBO+'] = time.time() - start_time
-    algorithm_results['TLBO+'] = (best_solution_plus, best_fitness_plus, history_plus)
+    # # 测试TLBO+
+    # print("\n测试TLBO+算法...")
+    # start_time = time.time()
+    # tlbo_plus = TLBOPlus(
+    #     system_model=system,
+    #     delay_model=delay_model,
+    #     energy_model=energy_model,
+    #     aoi_model=aoi_model,
+    #     max_iter=max_iter,
+    #     population_size=population_size,
+    #     w_energy=0.5,
+    #     w_delay=0.3,
+    #     w_aoi=0.2,
+    #     verbose=True
+    # )
+    # best_solution_plus, best_fitness_plus, history_plus = tlbo_plus.optimize()
+    # algorithm_times['TLBO+'] = time.time() - start_time
+    # algorithm_results['TLBO+'] = (best_solution_plus, best_fitness_plus, history_plus)
     
     # 测试GA
     print("\n测试GA算法...")
@@ -258,19 +258,31 @@ def test_solution_quality():
     aoi_model = AoIModel(system, delay_model)
     
     # 优化解决方案
-    tlbo_plus = TLBOPlus(
+    # tlbo_plus = TLBOPlus(
+    #     system_model=system,
+    #     delay_model=delay_model,
+    #     energy_model=energy_model,
+    #     aoi_model=aoi_model,
+    #     max_iter=50,
+    #     population_size=20,
+    #     w_energy=0.4,
+    #     w_delay=0.3,
+    #     w_aoi=0.3,
+    #     verbose=False
+    # )
+    tlbo = TLBO(
         system_model=system,
         delay_model=delay_model,
         energy_model=energy_model,
         aoi_model=aoi_model,
         max_iter=50,
         population_size=20,
-        w_energy=0.4,
+        w_energy=0.5,
         w_delay=0.3,
-        w_aoi=0.3,
+        w_aoi=0.2,
         verbose=False
     )
-    best_solution, best_fitness, _ = tlbo_plus.optimize()
+    best_solution, best_fitness, _ = tlbo.optimize()
     
     # 应用最优解
     system.apply_solution(best_solution)
