@@ -1,4 +1,4 @@
-# src/models/aoi_model.py (继续)
+# src/models/aoi_model.py 
 from typing import Dict, Optional
 from .system_model import SystemModel, Task
 from .delay_model import DelayModel
