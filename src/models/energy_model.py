@@ -80,10 +80,14 @@ class EnergyModel:
         if task.execution_location == 'device':
             return 0.0
         
-        # 找到任务关联的设备
-        device = next((d for d in self.system_model.devices if d.device_id == task.task_id), None)
-        if device is None:
+        # 检查任务是否有源设备ID
+        if task.source_device_id is None:
             raise ValueError(f"Task {task.task_id} is not associated with any device.")
+        
+        # 找到任务关联的设备
+        device = self.system_model.get_device_by_id(task.source_device_id)
+        if device is None:
+            raise ValueError(f"Source device with ID {task.source_device_id} not found for task {task.task_id}.")
         
         # 如果在边缘服务器执行
         if task.execution_location == 'edge':

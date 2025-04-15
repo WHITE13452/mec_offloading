@@ -45,6 +45,9 @@ def create_test_system_with_aoi(num_devices=5, num_edge_servers=3, num_cloud_ser
     
     # 添加任务，包括更新间隔和最大AoI
     for i in range(num_tasks):
+        # 为每个任务随机分配一个源设备
+        source_device_id = np.random.randint(0, num_devices)
+        
         task = Task(
             task_id=i,
             data_size=np.random.uniform(0.5e6, 1.5e6),  # 0.5-1.5 MB
@@ -53,9 +56,15 @@ def create_test_system_with_aoi(num_devices=5, num_edge_servers=3, num_cloud_ser
             priority=np.random.uniform(0.5, 1.5),
             max_delay=np.random.uniform(0.8, 1.2),  # 0.8-1.2 s
             update_interval=np.random.uniform(0.3, 0.7),  # 0.3-0.7 s
-            max_aoi=np.random.uniform(1.0, 2.0)  # 1.0-2.0 s
+            max_aoi=np.random.uniform(1.0, 2.0),  # 1.0-2.0 s
+            source_device_id=source_device_id  # 设置源设备ID
         )
         system.add_task(task)
+        
+        # 将任务添加到源设备的任务列表中
+        device = system.get_device_by_id(source_device_id)
+        if device:
+            device.tasks.append(task)
     
     # 设置网络参数
     for device in system.devices:

@@ -8,7 +8,8 @@ class Task:
     
     def __init__(self, task_id: int, data_size: float, computation_complexity: float, 
                  arrival_rate: float, priority: float, max_delay: float, 
-                 update_interval: Optional[float] = None, max_aoi: Optional[float] = None):
+                 update_interval: Optional[float] = None, max_aoi: Optional[float] = None, 
+                 source_device_id: Optional[int] = None):
         """
         初始化一个计算任务
         
@@ -30,6 +31,8 @@ class Task:
             任务更新间隔（仅用于第二部分，考虑AoI）
         max_aoi : float, optional
             最大可接受AoI（仅用于第二部分）
+        source_device_id : int, optional
+            任务源设备ID，表示任务从哪个设备发起
         """
         self.task_id = task_id
         self.data_size = data_size
@@ -39,6 +42,7 @@ class Task:
         self.max_delay = max_delay
         self.update_interval = update_interval
         self.max_aoi = max_aoi
+        self.source_device_id = source_device_id
         
         # 任务位置和资源分配的决策变量（由优化算法设置）
         self.execution_location = None  # 'device', 'edge', 或 'cloud'
@@ -282,6 +286,7 @@ class SystemModel:
         
         return solution
     
+    @classmethod
     def from_config(cls, config: Dict) -> 'SystemModel':
         """
         从配置字典创建系统模型
@@ -337,9 +342,16 @@ class SystemModel:
                 priority=task_config['priority'],
                 max_delay=task_config['max_delay'],
                 update_interval=task_config.get('update_interval'),
-                max_aoi=task_config.get('max_aoi')
+                max_aoi=task_config.get('max_aoi'),
+                source_device_id=task_config.get('source_device_id')  # 从配置中获取源设备ID
             )
             system.add_task(task)
+            
+            # 如果有源设备ID，将任务添加到设备的任务列表
+            if task.source_device_id is not None:
+                device = system.get_device_by_id(task.source_device_id)
+                if device:
+                    device.tasks.append(task)
         
         # 设置网络参数
         for link in config.get('device_to_edge_links', []):

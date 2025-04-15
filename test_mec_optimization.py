@@ -20,47 +20,35 @@ from src.algorithms.gwo import GWO
 
 
 def create_simple_system():
-    """创建一个简单的测试系统"""
+    """创建一个简单的系统用于测试"""
     system = SystemModel()
     
     # 添加设备
-    device = Device(
-        device_id=0,
-        max_cpu_frequency=1.5e9,  # 1.5 GHz
-        energy_coefficient=1e-27,
-        transmission_power=0.5  # 0.5 W
-    )
+    device = Device(device_id=0, max_cpu_frequency=2.0e9, energy_coefficient=1e-27, transmission_power=0.5)
     system.add_device(device)
     
     # 添加边缘服务器
-    edge_server = EdgeServer(
-        server_id=0,
-        max_cpu_frequency=3.0e9,  # 3.0 GHz
-        energy_coefficient=2e-27,
-        transmission_power=1.0  # 1.0 W
-    )
+    edge_server = EdgeServer(server_id=0, max_cpu_frequency=3.0e9, energy_coefficient=2e-27, transmission_power=1.0)
     system.add_edge_server(edge_server)
     
     # 添加云服务器
-    cloud_server = CloudServer(
-        server_id=0,
-        max_cpu_frequency=4.0e9,  # 4.0 GHz
-        energy_coefficient=3e-27
-    )
+    cloud_server = CloudServer(server_id=0, max_cpu_frequency=4.0e9, energy_coefficient=3e-27)
     system.add_cloud_server(cloud_server)
     
     # 添加任务
     task = Task(
-        task_id=0,
-        data_size=1e6,  # 1 MB
-        computation_complexity=100,  # 100 cycles/bit
-        arrival_rate=0.1,  # 0.1 tasks/s
+        task_id=0, 
+        data_size=1e6,  # 1MB
+        computation_complexity=100,  # 每比特100个CPU周期
+        arrival_rate=0.1,  # 每秒0.1个任务
         priority=1.0,
-        max_delay=1.0,  # 1.0 s
-        update_interval=0.5,  # 0.5 s (仅用于AoI测试)
-        max_aoi=1.5  # 1.5 s (仅用于AoI测试)
+        max_delay=1.0,  # 最大延迟1秒
+        update_interval=0.5,  # 更新间隔0.5秒
+        max_aoi=1.5,  # 最大可接受AoI 1.5秒
+        source_device_id=0  # 设置源设备ID
     )
     system.add_task(task)
+    device.tasks.append(task)  # 将任务添加到设备的任务列表
     
     # 设置网络参数
     system.set_device_to_edge_rate(
@@ -167,24 +155,24 @@ def test_algorithms():
     algorithm_times['TLBO'] = time.time() - start_time
     algorithm_results['TLBO'] = (best_solution, best_fitness, history)
     
-    # # 测试TLBO+
-    # print("\n测试TLBO+算法...")
-    # start_time = time.time()
-    # tlbo_plus = TLBOPlus(
-    #     system_model=system,
-    #     delay_model=delay_model,
-    #     energy_model=energy_model,
-    #     aoi_model=aoi_model,
-    #     max_iter=max_iter,
-    #     population_size=population_size,
-    #     w_energy=0.5,
-    #     w_delay=0.3,
-    #     w_aoi=0.2,
-    #     verbose=True
-    # )
-    # best_solution_plus, best_fitness_plus, history_plus = tlbo_plus.optimize()
-    # algorithm_times['TLBO+'] = time.time() - start_time
-    # algorithm_results['TLBO+'] = (best_solution_plus, best_fitness_plus, history_plus)
+    # 测试TLBO+
+    print("\n测试TLBO+算法...")
+    start_time = time.time()
+    tlbo_plus = TLBOPlus(
+        system_model=system,
+        delay_model=delay_model,
+        energy_model=energy_model,
+        aoi_model=aoi_model,
+        max_iter=max_iter,
+        population_size=population_size,
+        w_energy=0.5,
+        w_delay=0.3,
+        w_aoi=0.2,
+        verbose=True
+    )
+    best_solution_plus, best_fitness_plus, history_plus = tlbo_plus.optimize()
+    algorithm_times['TLBO+'] = time.time() - start_time
+    algorithm_results['TLBO+'] = (best_solution_plus, best_fitness_plus, history_plus)
     
     # 测试GA
     print("\n测试GA算法...")
@@ -258,19 +246,7 @@ def test_solution_quality():
     aoi_model = AoIModel(system, delay_model)
     
     # 优化解决方案
-    # tlbo_plus = TLBOPlus(
-    #     system_model=system,
-    #     delay_model=delay_model,
-    #     energy_model=energy_model,
-    #     aoi_model=aoi_model,
-    #     max_iter=50,
-    #     population_size=20,
-    #     w_energy=0.4,
-    #     w_delay=0.3,
-    #     w_aoi=0.3,
-    #     verbose=False
-    # )
-    tlbo = TLBO(
+    tlbo_plus = TLBOPlus(
         system_model=system,
         delay_model=delay_model,
         energy_model=energy_model,
@@ -282,7 +258,19 @@ def test_solution_quality():
         w_aoi=0.2,
         verbose=False
     )
-    best_solution, best_fitness, _ = tlbo.optimize()
+    # tlbo = TLBO(
+    #     system_model=system,
+    #     delay_model=delay_model,
+    #     energy_model=energy_model,
+    #     aoi_model=aoi_model,
+    #     max_iter=50,
+    #     population_size=20,
+    #     w_energy=0.5,
+    #     w_delay=0.3,
+    #     w_aoi=0.2,
+    #     verbose=False
+    # )
+    best_solution, best_fitness, _ = tlbo_plus.optimize()
     
     # 应用最优解
     system.apply_solution(best_solution)

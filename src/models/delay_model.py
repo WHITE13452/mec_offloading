@@ -54,15 +54,19 @@ class DelayModel:
         if task.execution_location is None or task.execution_node_id is None:
             raise ValueError(f"Task {task.task_id} has not been allocated.")
         
+        if task.source_device_id is None:
+            raise ValueError(f"Task {task.task_id} is not associated with any device.")
+        
         d_to_e_delay = 0.0
         e_to_c_delay = 0.0
+
+        # 获取源设备
+        device = self.system_model.get_device_by_id(task.source_device_id)
+        if device is None:
+            raise ValueError(f"Source device with ID {task.source_device_id} not found for task {task.task_id}.")
         
         if task.execution_location == 'edge':
             # 需要从设备传输到边缘
-            device = next((d for d in self.system_model.devices if d.device_id == task.task_id), None)
-            if device is None:
-                raise ValueError(f"Task {task.task_id} is not associated with any device.")
-            
             rate = self.system_model.device_to_edge_rates.get((device.device_id, task.execution_node_id))
             if rate is None:
                 raise ValueError(f"No transmission rate defined between device {device.device_id} and edge server {task.execution_node_id}.")
@@ -71,10 +75,6 @@ class DelayModel:
         
         elif task.execution_location == 'cloud':
             # 需要从设备传输到边缘，再从边缘传输到云
-            device = next((d for d in self.system_model.devices if d.device_id == task.task_id), None)
-            if device is None:
-                raise ValueError(f"Task {task.task_id} is not associated with any device.")
-            
             # 找到最近的边缘服务器（简化：假设使用第一个边缘服务器）
             if not self.system_model.edge_servers:
                 raise ValueError("No edge servers available.")

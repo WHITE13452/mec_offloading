@@ -30,9 +30,11 @@ def create_example_system():
         priority=1.0,
         max_delay=1.0,  # 最大延迟1秒
         update_interval=0.5,  # 更新间隔0.5秒
-        max_aoi=1.5  # 最大可接受AoI 1.5秒
+        max_aoi=1.5,  # 最大可接受AoI 1.5秒
+        source_device_id=1  # 设置源设备ID为device1
     )
     system.add_task(task1)
+    device1.tasks.append(task1)  # 将任务添加到设备的任务列表
     
     # 设置网络参数
     system.set_device_to_edge_rate(device_id=1, edge_id=1, rate=10e6, bandwidth=20e6)  # 10Mbps, 20MHz

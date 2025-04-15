@@ -6,6 +6,7 @@ from ..models.system_model import SystemModel
 from ..models.delay_model import DelayModel
 from ..models.energy_model import EnergyModel
 from ..models.aoi_model import AoIModel
+from scipy import special
 
 
 class TLBOPlus(TLBO):
@@ -71,8 +72,8 @@ class TLBOPlus(TLBO):
         numpy.ndarray
             莱维飞行步长
         """
-        sigma = (np.math.gamma(1 + self.levy_alpha) * np.sin(np.pi * self.levy_alpha / 2) / 
-                (np.math.gamma((1 + self.levy_alpha) / 2) * self.levy_alpha * 2 ** ((self.levy_alpha - 1) / 2))) ** (1 / self.levy_alpha)
+        sigma = (special.gamma(1 + self.levy_alpha) * np.sin(np.pi * self.levy_alpha / 2) / 
+                (special.gamma((1 + self.levy_alpha) / 2) * self.levy_alpha * 2 ** ((self.levy_alpha - 1) / 2))) ** (1 / self.levy_alpha)
         
         u = np.random.normal(0, sigma, size)
         v = np.random.normal(0, 1, size)

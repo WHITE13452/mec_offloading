@@ -6,7 +6,7 @@ from ..models.system_model import SystemModel, Device, EdgeServer, CloudServer, 
 from ..models.delay_model import DelayModel
 from ..models.energy_model import EnergyModel
 from ..algorithms.tlbo import TLBO
-# from ..algorithms.tlbo_plus import TLBOPlus
+from ..algorithms.tlbo_plus import TLBOPlus
 from ..algorithms.ga import GA  # 假设我们有遗传算法实现
 from ..algorithms.gwo import GWO  # 假设我们有灰狼优化算法实现
 
@@ -46,15 +46,24 @@ def create_test_system(num_devices=5, num_edge_servers=3, num_cloud_servers=1, n
     
     # 添加任务
     for i in range(num_tasks):
+        # 为每个任务随机分配一个源设备
+        source_device_id = np.random.randint(0, num_devices)
+        
         task = Task(
             task_id=i,
             data_size=np.random.uniform(0.5e6, 1.5e6),  # 0.5-1.5 MB
             computation_complexity=np.random.uniform(80, 120),  # 80-120 cycles/bit
             arrival_rate=np.random.uniform(0.05, 0.15),  # 0.05-0.15 tasks/s
             priority=np.random.uniform(0.5, 1.5),
-            max_delay=np.random.uniform(0.8, 1.2)  # 0.8-1.2 s
+            max_delay=np.random.uniform(0.8, 1.2),  # 0.8-1.2 s
+            source_device_id=source_device_id  # 设置源设备ID
         )
         system.add_task(task)
+        
+        # 将任务添加到源设备的任务列表中
+        device = system.get_device_by_id(source_device_id)
+        if device:
+            device.tasks.append(task)
     
     # 设置网络参数
     for device in system.devices:
@@ -93,7 +102,7 @@ def run_algorithm_comparison(system, max_iter=100, population_size=50, n_runs=10
     # 初始化算法
     algorithms = {
         'TLBO': TLBO(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
-        # 'TLBO+': TLBOPlus(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
+        'TLBO+': TLBOPlus(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
         'GA': GA(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
         'GWO': GWO(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size)
     }
