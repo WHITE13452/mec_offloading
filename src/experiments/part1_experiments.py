@@ -11,7 +11,7 @@ from ..algorithms.ga import GA  # 假设我们有遗传算法实现
 from ..algorithms.gwo import GWO  # 假设我们有灰狼优化算法实现
 
 
-def create_test_system(num_devices=5, num_edge_servers=3, num_cloud_servers=1, num_tasks=10):
+def create_test_system(num_devices=10, num_edge_servers=5, num_cloud_servers=2, num_tasks=20):
     """创建测试系统"""
     system = SystemModel()
     
@@ -195,7 +195,7 @@ def main():
     system = create_test_system()
     
     # 运行算法比较
-    results = run_algorithm_comparison(system)
+    results = run_algorithm_comparison(system, max_iter=200, population_size=100, n_runs=10)
     
     # 绘制收敛曲线
     plot_convergence_curves(results)
