@@ -21,7 +21,7 @@ class TLBOPlus(TLBO):
                  w_energy: float = 0.4,
                  w_delay: float = 0.6,
                  w_aoi: float = 0.0,
-                 levy_alpha: float = 1.5,
+                 levy_alpha: float = 0.5,
                  verbose: bool = False):
         """初始化TLBO+算法"""
         super().__init__(system_model, delay_model, energy_model, aoi_model,

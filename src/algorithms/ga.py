@@ -9,7 +9,7 @@ from ..models.aoi_model import AoIModel
 
 
 class GA(BaseAlgorithm):
-    """遗传算法（Genetic Algorithm）"""
+    """遗传算法（Genetic Algorithm）- 修复版"""
     
     def __init__(self, system_model: SystemModel, 
                  delay_model: DelayModel,
@@ -25,33 +25,6 @@ class GA(BaseAlgorithm):
                  verbose: bool = False):
         """
         初始化遗传算法
-        
-        Parameters:
-        -----------
-        system_model : SystemModel
-            系统模型实例
-        delay_model : DelayModel
-            延迟模型实例
-        energy_model : EnergyModel
-            能耗模型实例
-        aoi_model : AoIModel, optional
-            AoI模型实例，如果为None则不考虑AoI
-        max_iter : int
-            最大迭代次数
-        population_size : int
-            种群大小
-        crossover_prob : float
-            交叉概率
-        mutation_prob : float
-            变异概率
-        w_energy : float
-            能耗的权重系数
-        w_delay : float
-            延迟的权重系数
-        w_aoi : float
-            AoI的权重系数
-        verbose : bool
-            是否输出详细信息
         """
         super().__init__(system_model, max_iter, population_size, verbose)
         
@@ -66,10 +39,10 @@ class GA(BaseAlgorithm):
         self.w_delay = w_delay
         self.w_aoi = w_aoi
         
-        # 归一化因子（用于目标函数）
-        self.energy_max = 1.0
-        self.delay_max = 1.0
-        self.aoi_max = 1.0
+        # 预设归一化因子，避免除零
+        self.energy_max = 1e5  # 100,000 J
+        self.delay_max = 1e3   # 1,000 s
+        self.aoi_max = 1e2     # 100 s
         
         # 迭代历史记录
         self.history = []
@@ -79,23 +52,17 @@ class GA(BaseAlgorithm):
         population = []
         
         for _ in range(self.population_size):
-            # 为每个任务生成随机解
             solution = []
             for _ in range(self.num_tasks):
-                # 随机选择执行位置
                 loc_i = np.random.randint(self.loc_bounds[0], self.loc_bounds[1] + 1)
-                
-                # 随机选择计算资源分配
                 f_i = np.random.uniform(self.freq_bounds[0], self.freq_bounds[1])
                 
                 if self.consider_aoi:
-                    # 如果考虑AoI，随机选择更新间隔
                     delta_i = np.random.uniform(self.update_interval_bounds[0], self.update_interval_bounds[1])
                     solution.append([loc_i, f_i, delta_i])
                 else:
                     solution.append([loc_i, f_i])
             
-            # 确保解满足约束
             solution = self.handle_constraints(solution)
             population.append(solution)
         
@@ -103,70 +70,73 @@ class GA(BaseAlgorithm):
     
     def evaluate_fitness(self, solution):
         """
-        评估解的适应度（目标函数值）
-        
-        Parameters:
-        -----------
-        solution : List[List[Union[int, float]]]
-            解决方案
-            
-        Returns:
-        --------
-        float
-            适应度值（越小越好）
+        评估解的适应度（目标函数值）- 修复版
         """
-        # 将解应用到系统模型
-        self.system_model.apply_solution(solution)
-        
-        total_energy = 0.0
-        total_delay = 0.0
-        total_aoi = 0.0
-        
-        # 计算所有任务的能耗和延迟
-        for task in self.system_model.tasks:
-            # 计算延迟
-            delay = self.delay_model.calculate_total_delay(task)
-            total_delay += delay
+        try:
+            # 确保解的格式正确
+            if not solution or len(solution) != self.num_tasks:
+                return float('inf')
             
-            # 计算能耗
-            energy = self.energy_model.calculate_total_energy(task)
-            total_energy += energy
+            # 应用约束处理
+            solution = self.handle_constraints(solution)
             
-            # 计算AoI（如果考虑）
-            if self.consider_aoi and self.aoi_model and task.update_interval is not None:
-                aoi = self.aoi_model.calculate_average_aoi(task)
-                total_aoi += aoi
-        
-        # 更新归一化因子
-        self.energy_max = max(self.energy_max, total_energy)
-        self.delay_max = max(self.delay_max, total_delay)
-        if self.consider_aoi:
-            self.aoi_max = max(self.aoi_max, total_aoi)
-        
-        # 计算加权目标函数
-        fitness = (self.w_energy * total_energy / self.energy_max + 
-                  self.w_delay * total_delay / self.delay_max)
-        
-        if self.consider_aoi and self.aoi_model:
-            fitness += self.w_aoi * total_aoi / self.aoi_max
-        
-        return fitness
+            # 将解应用到系统模型
+            self.system_model.apply_solution(solution)
+            
+            total_energy = 0.0
+            total_delay = 0.0
+            total_aoi = 0.0
+            
+            # 计算所有任务的能耗和延迟
+            for task in self.system_model.tasks:
+                try:
+                    # 计算延迟
+                    delay = self.delay_model.calculate_total_delay(task)
+                    if not np.isfinite(delay) or delay < 0:
+                        return float('inf')
+                    total_delay += delay
+                    
+                    # 计算能耗
+                    energy = self.energy_model.calculate_total_energy(task)
+                    if not np.isfinite(energy) or energy < 0:
+                        return float('inf')
+                    total_energy += energy
+                    
+                    # 计算AoI（如果考虑）
+                    if self.consider_aoi and self.aoi_model and task.update_interval is not None:
+                        aoi = self.aoi_model.calculate_average_aoi(task)
+                        if not np.isfinite(aoi) or aoi < 0:
+                            return float('inf')
+                        total_aoi += aoi
+                        
+                except Exception:
+                    return float('inf')
+            
+            # 检查总值
+            if not (np.isfinite(total_energy) and np.isfinite(total_delay)):
+                return float('inf')
+            
+            # 更新归一化因子（但保持最小值）
+            self.energy_max = max(self.energy_max, total_energy, 1.0)
+            self.delay_max = max(self.delay_max, total_delay, 1.0)
+            if self.consider_aoi:
+                self.aoi_max = max(self.aoi_max, total_aoi, 1.0)
+            
+            # 计算加权目标函数
+            fitness = (self.w_energy * total_energy / self.energy_max + 
+                      self.w_delay * total_delay / self.delay_max)
+            
+            if self.consider_aoi and self.aoi_model:
+                fitness += self.w_aoi * total_aoi / self.aoi_max
+            
+            return fitness if np.isfinite(fitness) else float('inf')
+            
+        except Exception:
+            return float('inf')
     
     def selection(self, population, fitness_values):
         """
-        选择算子：锦标赛选择
-        
-        Parameters:
-        -----------
-        population : List[List[List[Union[int, float]]]]
-            当前种群
-        fitness_values : List[float]
-            当前种群的适应度值
-            
-        Returns:
-        --------
-        List[List[List[Union[int, float]]]]
-            选择后的种群
+        选择算子：锦标赛选择 - 修复版
         """
         new_population = []
         
@@ -184,29 +154,20 @@ class GA(BaseAlgorithm):
     
     def crossover(self, population):
         """
-        交叉算子：均匀交叉
-        
-        Parameters:
-        -----------
-        population : List[List[List[Union[int, float]]]]
-            当前种群
-            
-        Returns:
-        --------
-        List[List[List[Union[int, float]]]]
-            交叉后的种群
+        交叉算子：均匀交叉 - 修复版
         """
         new_population = []
         
         # 随机打乱种群顺序
-        np.random.shuffle(population)
+        shuffled_indices = np.random.permutation(self.population_size)
+        shuffled_population = [population[i] for i in shuffled_indices]
         
         # 对相邻的两个解进行交叉
         for i in range(0, self.population_size, 2):
-            parent1 = population[i]
+            parent1 = shuffled_population[i]
             
             if i + 1 < self.population_size:
-                parent2 = population[i + 1]
+                parent2 = shuffled_population[i + 1]
                 
                 # 根据交叉概率决定是否进行交叉
                 if np.random.random() < self.crossover_prob:
@@ -216,42 +177,32 @@ class GA(BaseAlgorithm):
                     
                     for j in range(self.num_tasks):
                         if np.random.random() < 0.5:
-                            child1.append(parent1[j])
-                            child2.append(parent2[j])
+                            child1.append(parent1[j].copy())
+                            child2.append(parent2[j].copy())
                         else:
-                            child1.append(parent2[j])
-                            child2.append(parent1[j])
+                            child1.append(parent2[j].copy())
+                            child2.append(parent1[j].copy())
                     
                     new_population.append(child1)
                     new_population.append(child2)
                 else:
                     # 不交叉，直接复制父解
-                    new_population.append(parent1.copy())
-                    new_population.append(parent2.copy())
+                    new_population.append([p.copy() for p in parent1])
+                    new_population.append([p.copy() for p in parent2])
             else:
                 # 如果种群大小为奇数，最后一个解直接复制
-                new_population.append(parent1.copy())
+                new_population.append([p.copy() for p in parent1])
         
         return new_population
     
     def mutation(self, population):
         """
-        变异算子
-        
-        Parameters:
-        -----------
-        population : List[List[List[Union[int, float]]]]
-            当前种群
-            
-        Returns:
-        --------
-        List[List[List[Union[int, float]]]]
-            变异后的种群
+        变异算子 - 修复版
         """
         new_population = []
         
         for individual in population:
-            mutated_individual = individual.copy()
+            mutated_individual = [task_sol.copy() for task_sol in individual]
             
             # 对每个任务，根据变异概率决定是否变异
             for i in range(self.num_tasks):
@@ -280,40 +231,31 @@ class GA(BaseAlgorithm):
     
     def elitism(self, population, fitness_values, elite_size=1):
         """
-        精英保留策略
-        
-        Parameters:
-        -----------
-        population : List[List[List[Union[int, float]]]]
-            当前种群
-        fitness_values : List[float]
-            当前种群的适应度值
-        elite_size : int
-            保留的精英数量
-            
-        Returns:
-        --------
-        Tuple[List[List[List[Union[int, float]]]], List[float]]
-            精英解和其适应度值
+        精英保留策略 - 修复版
         """
+        # 找到有效的解
+        valid_indices = [(i, fitness_values[i]) for i in range(len(fitness_values)) if np.isfinite(fitness_values[i])]
+        
+        if not valid_indices:
+            return [], []
+        
         # 按适应度值排序
-        sorted_indices = np.argsort(fitness_values)
+        valid_indices.sort(key=lambda x: x[1])
         
         # 选择最好的elite_size个解
-        elite_indices = sorted_indices[:elite_size]
-        elite_solutions = [population[i] for i in elite_indices]
-        elite_fitness = [fitness_values[i] for i in elite_indices]
+        elite_solutions = []
+        elite_fitness = []
+        
+        for i in range(min(elite_size, len(valid_indices))):
+            idx, fitness = valid_indices[i]
+            elite_solutions.append(population[idx])
+            elite_fitness.append(fitness)
         
         return elite_solutions, elite_fitness
     
     def optimize(self):
         """
-        执行遗传算法优化
-        
-        Returns:
-        --------
-        Tuple[List[List[Union[int, float]]], float, List[float]]
-            最优解、最优适应度值和迭代历史
+        执行遗传算法优化 - 修复版
         """
         # 初始化种群
         population = self.initialize_population()
@@ -321,8 +263,14 @@ class GA(BaseAlgorithm):
         # 评估初始种群
         fitness_values = [self.evaluate_fitness(solution) for solution in population]
         
-        # 记录最佳解
-        best_idx = np.argmin(fitness_values)
+        # 找到有效的最佳解
+        valid_indices = [i for i, f in enumerate(fitness_values) if np.isfinite(f)]
+        if not valid_indices:
+            if self.verbose:
+                print("Warning: No valid solutions found in initial population!")
+            return None, float('inf'), []
+        
+        best_idx = min(valid_indices, key=lambda i: fitness_values[i])
         self.best_solution = population[best_idx]
         self.best_fitness = fitness_values[best_idx]
         
@@ -330,32 +278,50 @@ class GA(BaseAlgorithm):
         self.history = [self.best_fitness]
         
         for iter_idx in range(self.max_iter):
-            # 选择
-            population = self.selection(population, fitness_values)
-            
-            # 交叉
-            population = self.crossover(population)
-            
-            # 变异
-            population = self.mutation(population)
-            
-            # 评估新种群
-            fitness_values = [self.evaluate_fitness(solution) for solution in population]
-            
-            # 精英保留
-            elite_solutions, _ = self.elitism(population, fitness_values)
-            
-            # 更新最佳解
-            best_idx = np.argmin(fitness_values)
-            if fitness_values[best_idx] < self.best_fitness:
-                self.best_solution = population[best_idx]
-                self.best_fitness = fitness_values[best_idx]
-            
-            # 记录历史
-            self.history.append(self.best_fitness)
-            
-            if self.verbose and (iter_idx + 1) % 10 == 0:
-                print(f"Iteration {iter_idx + 1}/{self.max_iter}, Best fitness: {self.best_fitness:.6f}")
+            try:
+                # 选择
+                population = self.selection(population, fitness_values)
+                
+                # 交叉
+                population = self.crossover(population)
+                
+                # 变异
+                population = self.mutation(population)
+                
+                # 评估新种群
+                fitness_values = [self.evaluate_fitness(solution) for solution in population]
+                
+                # 精英保留
+                elite_solutions, elite_fitness = self.elitism(population, fitness_values, elite_size=2)
+                
+                # 更新最佳解
+                valid_indices = [i for i, f in enumerate(fitness_values) if np.isfinite(f)]
+                if valid_indices:
+                    current_best_idx = min(valid_indices, key=lambda i: fitness_values[i])
+                    if fitness_values[current_best_idx] < self.best_fitness:
+                        self.best_solution = population[current_best_idx]
+                        self.best_fitness = fitness_values[current_best_idx]
+                
+                # 将精英解加入下一代种群
+                if elite_solutions:
+                    # 替换最差的解
+                    worst_indices = sorted(range(len(fitness_values)), 
+                                         key=lambda i: fitness_values[i], 
+                                         reverse=True)[:len(elite_solutions)]
+                    for i, elite_sol in enumerate(elite_solutions):
+                        population[worst_indices[i]] = elite_sol
+                        fitness_values[worst_indices[i]] = elite_fitness[i]
+                
+                # 记录历史
+                self.history.append(self.best_fitness)
+                
+                if self.verbose and (iter_idx + 1) % 10 == 0:
+                    print(f"Iteration {iter_idx + 1}/{self.max_iter}, Best fitness: {self.best_fitness:.6f}")
+                    
+            except Exception as e:
+                if self.verbose:
+                    print(f"Error in iteration {iter_idx}: {e}")
+                self.history.append(self.best_fitness)
         
         if self.verbose:
             print(f"Optimization completed. Best fitness: {self.best_fitness:.6f}")

@@ -1,29 +1,12 @@
-# src/algorithms/tlbo.py
+# src/algorithms/fixed_tlbo.py
 import numpy as np
-from typing import List, Tuple, Dict, Any, Optional
-from .base_algorithm import BaseAlgorithm
-from ..models.system_model import SystemModel
-from ..models.delay_model import DelayModel
-from ..models.energy_model import EnergyModel
-from ..models.aoi_model import AoIModel
+from .fixed_base_algorithm import FixedBaseAlgorithm
 
-
-class TLBO(BaseAlgorithm):
-    """基于教学的优化算法（Teaching-Learning-Based Optimization）- 修复版"""
+class FixedTLBO(FixedBaseAlgorithm):
+    """修复后的TLBO算法"""
     
-    def __init__(self, system_model: SystemModel, 
-                 delay_model: DelayModel,
-                 energy_model: EnergyModel,
-                 aoi_model: Optional[AoIModel] = None,
-                 max_iter: int = 100,
-                 population_size: int = 50,
-                 w_energy: float = 0.4,
-                 w_delay: float = 0.6,
-                 w_aoi: float = 0.0,
-                 verbose: bool = False):
-        """
-        初始化TLBO算法
-        """
+    def __init__(self, system_model, delay_model, energy_model, aoi_model=None,
+                 max_iter=100, population_size=50, w_energy=0.4, w_delay=0.6, w_aoi=0.0, verbose=False):
         super().__init__(system_model, max_iter, population_size, verbose)
         
         self.delay_model = delay_model
@@ -34,16 +17,68 @@ class TLBO(BaseAlgorithm):
         self.w_delay = w_delay
         self.w_aoi = w_aoi
         
-        # 预设归一化因子，避免除零
-        self.energy_max = 1e5  # 100,000 J
-        self.delay_max = 1e3   # 1,000 s
-        self.aoi_max = 1e2     # 100 s
-        
-        # 迭代历史记录
         self.history = []
     
+    def evaluate_fitness(self, solution):
+        """稳定的适应度评估"""
+        try:
+            # 确保解的格式正确
+            if not solution or len(solution) != self.num_tasks:
+                return float('inf')
+            
+            # 应用约束处理
+            solution = self.handle_constraints(solution)
+            
+            # 将解应用到系统模型
+            self.system_model.apply_solution(solution)
+            
+            total_energy = 0.0
+            total_delay = 0.0
+            total_aoi = 0.0
+            
+            # 计算所有任务的指标
+            for task in self.system_model.tasks:
+                try:
+                    # 计算延迟
+                    delay = self.delay_model.calculate_total_delay(task)
+                    if not np.isfinite(delay) or delay < 0:
+                        return float('inf')
+                    total_delay += delay
+                    
+                    # 计算能耗
+                    energy = self.energy_model.calculate_total_energy(task)
+                    if not np.isfinite(energy) or energy < 0:
+                        return float('inf')
+                    total_energy += energy
+                    
+                    # 计算AoI
+                    if self.consider_aoi and self.aoi_model and task.update_interval is not None:
+                        aoi = self.aoi_model.calculate_average_aoi(task)
+                        if not np.isfinite(aoi) or aoi < 0:
+                            return float('inf')
+                        total_aoi += aoi
+                        
+                except Exception:
+                    return float('inf')
+            
+            # 检查总值
+            if not (np.isfinite(total_energy) and np.isfinite(total_delay)):
+                return float('inf')
+            
+            # 使用预设的归一化因子计算适应度
+            fitness = (self.w_energy * total_energy / self.energy_max + 
+                      self.w_delay * total_delay / self.delay_max)
+            
+            if self.consider_aoi and self.aoi_model:
+                fitness += self.w_aoi * total_aoi / self.aoi_max
+            
+            return fitness if np.isfinite(fitness) else float('inf')
+            
+        except Exception:
+            return float('inf')
+    
     def initialize_population(self):
-        """初始化种群（学生）"""
+        """初始化种群"""
         population = []
         
         for _ in range(self.population_size):
@@ -63,108 +98,26 @@ class TLBO(BaseAlgorithm):
         
         return population
     
-    def evaluate_fitness(self, solution):
-        """
-        评估解的适应度（目标函数值）- 修复版
-        """
-        try:
-            # 确保解的格式正确
-            if not solution or len(solution) != self.num_tasks:
-                return float('inf')
-            
-            # 应用约束处理
-            solution = self.handle_constraints(solution)
-            
-            # 将解应用到系统模型
-            self.system_model.apply_solution(solution)
-            
-            total_energy = 0.0
-            total_delay = 0.0
-            total_aoi = 0.0
-            
-            # 计算所有任务的能耗和延迟
-            for task in self.system_model.tasks:
-                try:
-                    # 计算延迟
-                    delay = self.delay_model.calculate_total_delay(task)
-                    if not np.isfinite(delay) or delay < 0:
-                        return float('inf')
-                    total_delay += delay
-                    
-                    # 计算能耗
-                    energy = self.energy_model.calculate_total_energy(task)
-                    if not np.isfinite(energy) or energy < 0:
-                        return float('inf')
-                    total_energy += energy
-                    
-                    # 计算AoI（如果考虑）
-                    if self.consider_aoi and self.aoi_model and task.update_interval is not None:
-                        aoi = self.aoi_model.calculate_average_aoi(task)
-                        if not np.isfinite(aoi) or aoi < 0:
-                            return float('inf')
-                        total_aoi += aoi
-                        
-                except Exception:
-                    return float('inf')
-            
-            # 检查总值
-            if not (np.isfinite(total_energy) and np.isfinite(total_delay)):
-                return float('inf')
-            
-            # 更新归一化因子（但保持最小值）
-            self.energy_max = max(self.energy_max, total_energy, 1.0)
-            self.delay_max = max(self.delay_max, total_delay, 1.0)
-            if self.consider_aoi:
-                self.aoi_max = max(self.aoi_max, total_aoi, 1.0)
-            
-            # 计算加权目标函数
-            fitness = (self.w_energy * total_energy / self.energy_max + 
-                      self.w_delay * total_delay / self.delay_max)
-            
-            if self.consider_aoi and self.aoi_model:
-                fitness += self.w_aoi * total_aoi / self.aoi_max
-            
-            return fitness if np.isfinite(fitness) else float('inf')
-            
-        except Exception:
-            return float('inf')
-    
     def teacher_phase(self, population, fitness_values):
-        """
-        TLBO的教师阶段 - 修复版
-        """
+        """修复的教师阶段"""
         new_population = []
         
         try:
-            # 找出最好的解（教师）
-            valid_indices = [i for i, f in enumerate(fitness_values) if np.isfinite(f)]
-            if not valid_indices:
-                return population
-            
-            best_idx = min(valid_indices, key=lambda i: fitness_values[i])
+            best_idx = np.argmin(fitness_values)
             teacher = population[best_idx]
-            
-            # 计算平均解
             mean_solution = np.mean(population, axis=0)
             
             for i, student in enumerate(population):
+                tf = np.random.randint(1, 3)
+                r = np.random.rand(*np.array(student).shape)
+                
+                # 安全的数组运算
                 try:
-                    # 生成随机教学因子
-                    tf = np.random.randint(1, 3)  # 1或2
-                    
-                    # 生成随机权重
-                    r = np.random.rand(*np.array(student).shape)
-                    
-                    # 更新学生（通过教师）
                     new_student = np.array(student) + r * (np.array(teacher) - tf * mean_solution)
-                    
-                    # 处理约束
                     new_student = self.handle_constraints(new_student.tolist())
                     
-                    # 评估新解
                     new_fitness = self.evaluate_fitness(new_student)
                     
-                    # 如果新解更好，则接受
                     if np.isfinite(new_fitness) and new_fitness < fitness_values[i]:
                         new_population.append(new_student)
                     else:
@@ -179,37 +132,27 @@ class TLBO(BaseAlgorithm):
             return population
     
     def learner_phase(self, population, fitness_values):
-        """
-        TLBO的学习者阶段 - 修复版
-        """
+        """修复的学习者阶段"""
         new_population = []
         
         try:
             for i, student in enumerate(population):
+                j = i
+                while j == i:
+                    j = np.random.randint(0, self.population_size)
+                
+                other_student = population[j]
+                r = np.random.rand(*np.array(student).shape)
+                
                 try:
-                    # 随机选择另一个学生
-                    j = i
-                    while j == i:
-                        j = np.random.randint(0, self.population_size)
-                    
-                    other_student = population[j]
-                    
-                    # 生成随机权重
-                    r = np.random.rand(*np.array(student).shape)
-                    
-                    # 根据适应度比较，更新学习方向
                     if fitness_values[i] < fitness_values[j]:
                         new_student = np.array(student) + r * (np.array(student) - np.array(other_student))
                     else:
                         new_student = np.array(student) + r * (np.array(other_student) - np.array(student))
                     
-                    # 处理约束
                     new_student = self.handle_constraints(new_student.tolist())
-                    
-                    # 评估新解
                     new_fitness = self.evaluate_fitness(new_student)
                     
-                    # 如果新解更好，则接受
                     if np.isfinite(new_fitness) and new_fitness < fitness_values[i]:
                         new_population.append(new_student)
                     else:
@@ -224,41 +167,27 @@ class TLBO(BaseAlgorithm):
             return population
     
     def optimize(self):
-        """
-        执行TLBO优化 - 修复版
-        """
-        # 初始化种群
+        """执行优化"""
         population = self.initialize_population()
-        
-        # 评估初始种群
         fitness_values = [self.evaluate_fitness(solution) for solution in population]
         
-        # 找到有效的最佳解
+        # 移除无效解
         valid_indices = [i for i, f in enumerate(fitness_values) if np.isfinite(f)]
         if not valid_indices:
-            if self.verbose:
-                print("Warning: No valid solutions found in initial population!")
+            print("Warning: No valid solutions found!")
             return None, float('inf'), []
         
         best_idx = min(valid_indices, key=lambda i: fitness_values[i])
         self.best_solution = population[best_idx]
         self.best_fitness = fitness_values[best_idx]
-        
-        # 初始化迭代历史
         self.history = [self.best_fitness]
         
         for iter_idx in range(self.max_iter):
             try:
-                # 教师阶段
                 population = self.teacher_phase(population, fitness_values)
-                
-                # 更新适应度值
                 fitness_values = [self.evaluate_fitness(solution) for solution in population]
                 
-                # 学习者阶段
                 population = self.learner_phase(population, fitness_values)
-                
-                # 更新适应度值
                 fitness_values = [self.evaluate_fitness(solution) for solution in population]
                 
                 # 更新最佳解
@@ -269,7 +198,6 @@ class TLBO(BaseAlgorithm):
                         self.best_solution = population[best_idx]
                         self.best_fitness = fitness_values[best_idx]
                 
-                # 记录历史
                 self.history.append(self.best_fitness)
                 
                 if self.verbose and (iter_idx + 1) % 10 == 0:
@@ -278,9 +206,6 @@ class TLBO(BaseAlgorithm):
             except Exception as e:
                 if self.verbose:
                     print(f"Error in iteration {iter_idx}: {e}")
-                self.history.append(self.best_fitness)
-        
-        if self.verbose:
-            print(f"Optimization completed. Best fitness: {self.best_fitness:.6f}")
+                break
         
         return self.best_solution, self.best_fitness, self.history

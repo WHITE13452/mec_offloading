@@ -7,6 +7,7 @@ from ..models.delay_model import DelayModel
 from ..models.energy_model import EnergyModel
 from ..algorithms.tlbo import TLBO
 from ..algorithms.tlbo_plus import TLBOPlus
+from ..algorithms.tlbo_hho import TLBOHHO
 from ..algorithms.ga import GA  # 假设我们有遗传算法实现
 from ..algorithms.gwo import GWO  # 假设我们有灰狼优化算法实现
 
@@ -102,7 +103,8 @@ def run_algorithm_comparison(system, max_iter=100, population_size=50, n_runs=10
     # 初始化算法
     algorithms = {
         'TLBO': TLBO(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
-        'TLBO+': TLBOPlus(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
+        'TLBOHHO': TLBOHHO(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
+        # 'TLBO+': TLBOPlus(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
         'GA': GA(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size),
         'GWO': GWO(system, delay_model, energy_model, max_iter=max_iter, population_size=population_size)
     }

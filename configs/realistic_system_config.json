@@ -1,0 +1,1057 @@
+{
+  "system_name": "realistic_config",
+  "devices": [
+    {
+      "id": 0,
+      "max_cpu_frequency": 130555271.50772834,
+      "energy_coefficient": 5.1757612557708434e-27,
+      "transmission_power": 0.0730676048606599
+    },
+    {
+      "id": 1,
+      "max_cpu_frequency": 238118938.24122393,
+      "energy_coefficient": 6.621087516367948e-27,
+      "transmission_power": 0.06882165260784746
+    },
+    {
+      "id": 2,
+      "max_cpu_frequency": 271528591.3442121,
+      "energy_coefficient": 5.325581721795185e-27,
+      "transmission_power": 0.0652140354906048
+    },
+    {
+      "id": 3,
+      "max_cpu_frequency": 259516283.1823622,
+      "energy_coefficient": 6.598820676106604e-27,
+      "transmission_power": 0.053359906388063476
+    },
+    {
+      "id": 4,
+      "max_cpu_frequency": 250527805.51428455,
+      "energy_coefficient": 5.2121512941020474e-27,
+      "transmission_power": 0.070350901136963
+    },
+    {
+      "id": 5,
+      "max_cpu_frequency": 212158919.15513945,
+      "energy_coefficient": 6.593977075860719e-27,
+      "transmission_power": 0.07510735972208644
+    },
+    {
+      "id": 6,
+      "max_cpu_frequency": 214691182.48369664,
+      "energy_coefficient": 6.526366997766345e-27,
+      "transmission_power": 0.07582698715361932
+    },
+    {
+      "id": 7,
+      "max_cpu_frequency": 176210493.57124692,
+      "energy_coefficient": 6.399490925122207e-27,
+      "transmission_power": 0.06486385516281021
+    },
+    {
+      "id": 8,
+      "max_cpu_frequency": 668752154.5511386,
+      "energy_coefficient": 4.68457106547193e-27,
+      "transmission_power": 0.12543943717037562
+    },
+    {
+      "id": 9,
+      "max_cpu_frequency": 526425297.2146915,
+      "energy_coefficient": 4.877298756694012e-27,
+      "transmission_power": 0.14555669619704695
+    },
+    {
+      "id": 10,
+      "max_cpu_frequency": 711983083.5403007,
+      "energy_coefficient": 3.858777782763183e-27,
+      "transmission_power": 0.19652063449439944
+    },
+    {
+      "id": 11,
+      "max_cpu_frequency": 623844936.6338234,
+      "energy_coefficient": 4.7700651684467355e-27,
+      "transmission_power": 0.13015494486124188
+    },
+    {
+      "id": 12,
+      "max_cpu_frequency": 855995399.4054278,
+      "energy_coefficient": 3.7076339447113195e-27,
+      "transmission_power": 0.15115885910266474
+    },
+    {
+      "id": 13,
+      "max_cpu_frequency": 686134825.4392564,
+      "energy_coefficient": 4.4981598156102954e-27,
+      "transmission_power": 0.15442464572012973
+    },
+    {
+      "id": 14,
+      "max_cpu_frequency": 888662405.0695258,
+      "energy_coefficient": 3.9547145061529695e-27,
+      "transmission_power": 0.17251702227036408
+    },
+    {
+      "id": 15,
+      "max_cpu_frequency": 863259525.1239985,
+      "energy_coefficient": 3.873917595533946e-27,
+      "transmission_power": 0.18980697015132775
+    },
+    {
+      "id": 16,
+      "max_cpu_frequency": 1395687874.7995853,
+      "energy_coefficient": 2.0969109589550362e-27,
+      "transmission_power": 0.21947348355787177
+    },
+    {
+      "id": 17,
+      "max_cpu_frequency": 1359671189.6348746,
+      "energy_coefficient": 2.8709673812076646e-27,
+      "transmission_power": 0.21452853803871075
+    },
+    {
+      "id": 18,
+      "max_cpu_frequency": 1427333070.037571,
+      "energy_coefficient": 2.061562251875352e-27,
+      "transmission_power": 0.22046447211369982
+    },
+    {
+      "id": 19,
+      "max_cpu_frequency": 1466244700.130594,
+      "energy_coefficient": 3.2395906666237985e-27,
+      "transmission_power": 0.2334829770263882
+    }
+  ],
+  "edge_servers": [
+    {
+      "id": 0,
+      "max_cpu_frequency": 4054438008.390919,
+      "energy_coefficient": 8.71647560293671e-28,
+      "transmission_power": 0.8914631447047231
+    },
+    {
+      "id": 1,
+      "max_cpu_frequency": 4202210380.6258497,
+      "energy_coefficient": 9.758588663355243e-28,
+      "transmission_power": 0.7769971285380395
+    },
+    {
+      "id": 2,
+      "max_cpu_frequency": 4669226469.24172,
+      "energy_coefficient": 1.1445357161801948e-27,
+      "transmission_power": 0.7268500630606323
+    },
+    {
+      "id": 3,
+      "max_cpu_frequency": 4321298358.221838,
+      "energy_coefficient": 9.730115061731611e-28,
+      "transmission_power": 0.8152604785993188
+    }
+  ],
+  "cloud_servers": [
+    {
+      "id": 0,
+      "max_cpu_frequency": 8730037164.40278,
+      "energy_coefficient": 7.772972785861684e-28
+    },
+    {
+      "id": 1,
+      "max_cpu_frequency": 8584684373.474465,
+      "energy_coefficient": 7.082135128078131e-28
+    }
+  ],
+  "tasks": [
+    {
+      "id": 0,
+      "data_size": 2462329.998141346,
+      "computation_complexity": 1559.0549453494878,
+      "arrival_rate": 0.02588390035938432,
+      "priority": 1.7084392741383827,
+      "max_delay": 3.626473151039923,
+      "source_device_id": 4
+    },
+    {
+      "id": 1,
+      "data_size": 2671937.6425320515,
+      "computation_complexity": 2173.675801529312,
+      "arrival_rate": 0.023812915002732808,
+      "priority": 1.5496299864094987,
+      "max_delay": 4.531490048170952,
+      "source_device_id": 3
+    },
+    {
+      "id": 2,
+      "data_size": 1285670.5285072129,
+      "computation_complexity": 2508.2560095391245,
+      "arrival_rate": 0.025049003644194125,
+      "priority": 1.548175838148287,
+      "max_delay": 3.0321941005294657,
+      "source_device_id": 6
+    },
+    {
+      "id": 3,
+      "data_size": 1603250.1206240621,
+      "computation_complexity": 2393.4715372641595,
+      "arrival_rate": 0.029569200272710674,
+      "priority": 1.8304477553667362,
+      "max_delay": 5.684742443461212,
+      "source_device_id": 0
+    },
+    {
+      "id": 4,
+      "data_size": 1183161.4437178022,
+      "computation_complexity": 2614.824861918959,
+      "arrival_rate": 0.046724031749028797,
+      "priority": 1.5434519181061659,
+      "max_delay": 4.445123489629479,
+      "source_device_id": 13
+    },
+    {
+      "id": 5,
+      "data_size": 1577582.2496685672,
+      "computation_complexity": 2670.7677845393573,
+      "arrival_rate": 0.04086573404993026,
+      "priority": 1.7368485615245288,
+      "max_delay": 4.413896661279979,
+      "source_device_id": 7
+    },
+    {
+      "id": 6,
+      "data_size": 1126331.4676077364,
+      "computation_complexity": 1977.0656591199968,
+      "arrival_rate": 0.04005484319448613,
+      "priority": 1.9710778696434004,
+      "max_delay": 3.5743339897966013,
+      "source_device_id": 4
+    },
+    {
+      "id": 7,
+      "data_size": 1447188.3060932949,
+      "computation_complexity": 2546.5386696319083,
+      "arrival_rate": 0.0497173561422891,
+      "priority": 1.7302258757030256,
+      "max_delay": 5.928188408575597,
+      "source_device_id": 11
+    },
+    {
+      "id": 8,
+      "data_size": 1921045.639156674,
+      "computation_complexity": 2569.11232113075,
+      "arrival_rate": 0.0229890377653409,
+      "priority": 1.7802388437114818,
+      "max_delay": 4.284646847119662,
+      "source_device_id": 14
+    },
+    {
+      "id": 9,
+      "data_size": 1993271.9909098372,
+      "computation_complexity": 1633.0641929790222,
+      "arrival_rate": 0.02207559616256439,
+      "priority": 1.748791339987948,
+      "max_delay": 3.906373696535856,
+      "source_device_id": 6
+    },
+    {
+      "id": 10,
+      "data_size": 1889983.4699964891,
+      "computation_complexity": 1524.3891894481962,
+      "arrival_rate": 0.03819766193880392,
+      "priority": 1.7936681499001477,
+      "max_delay": 5.424485118734367,
+      "source_device_id": 15
+    },
+    {
+      "id": 11,
+      "data_size": 2043219.9889791962,
+      "computation_complexity": 2996.4920147925473,
+      "arrival_rate": 0.035251126738460724,
+      "priority": 1.9549360884492635,
+      "max_delay": 3.1033381944490834,
+      "source_device_id": 13
+    },
+    {
+      "id": 12,
+      "data_size": 5123723.245745027,
+      "computation_complexity": 1113.2610915574787,
+      "arrival_rate": 0.016794424653758095,
+      "priority": 1.0327044410037878,
+      "max_delay": 6.0293389767200765,
+      "source_device_id": 14
+    },
+    {
+      "id": 13,
+      "data_size": 7018946.612595231,
+      "computation_complexity": 676.5246779462994,
+      "arrival_rate": 0.014530623773721536,
+      "priority": 1.010396606908887,
+      "max_delay": 7.499263500626405,
+      "source_device_id": 19
+    },
+    {
+      "id": 14,
+      "data_size": 7516585.12265655,
+      "computation_complexity": 808.5672370642887,
+      "arrival_rate": 0.02327753414514779,
+      "priority": 1.4890582021824357,
+      "max_delay": 8.612441607673171,
+      "source_device_id": 17
+    },
+    {
+      "id": 15,
+      "data_size": 8182185.716545676,
+      "computation_complexity": 873.5390331174318,
+      "arrival_rate": 0.010383830873520296,
+      "priority": 1.1354459128755736,
+      "max_delay": 8.529183981419747,
+      "source_device_id": 13
+    },
+    {
+      "id": 16,
+      "data_size": 7451904.164088707,
+      "computation_complexity": 805.9547488836386,
+      "arrival_rate": 0.021414215999129838,
+      "priority": 1.3938682816948589,
+      "max_delay": 8.186526407608618,
+      "source_device_id": 19
+    },
+    {
+      "id": 17,
+      "data_size": 10289243.587576265,
+      "computation_complexity": 1129.1134371007358,
+      "arrival_rate": 0.020173898548528614,
+      "priority": 1.3977742879160984,
+      "max_delay": 8.527901691701901,
+      "source_device_id": 12
+    },
+    {
+      "id": 18,
+      "data_size": 7870534.620943785,
+      "computation_complexity": 1068.678039194709,
+      "arrival_rate": 0.02589358892686587,
+      "priority": 1.168496849987728,
+      "max_delay": 7.55314881048885,
+      "source_device_id": 17
+    },
+    {
+      "id": 19,
+      "data_size": 13964145.227074416,
+      "computation_complexity": 672.3351888209727,
+      "arrival_rate": 0.013359390990247494,
+      "priority": 1.2511399585019087,
+      "max_delay": 8.918494317515133,
+      "source_device_id": 15
+    },
+    {
+      "id": 20,
+      "data_size": 12221269.056834143,
+      "computation_complexity": 229.68353154109852,
+      "arrival_rate": 0.02994273870366041,
+      "priority": 1.3025293475071256,
+      "max_delay": 3.3458341762964086,
+      "source_device_id": 7
+    },
+    {
+      "id": 21,
+      "data_size": 9802368.363323417,
+      "computation_complexity": 399.894125335634,
+      "arrival_rate": 0.014184618218016266,
+      "priority": 1.3811641447031706,
+      "max_delay": 4.288634578151611,
+      "source_device_id": 6
+    },
+    {
+      "id": 22,
+      "data_size": 490134.5385030843,
+      "computation_complexity": 170.3150203457153,
+      "arrival_rate": 0.11768152859041602,
+      "priority": 1.874230522786757,
+      "max_delay": 0.1854015679822556,
+      "source_device_id": 10
+    },
+    {
+      "id": 23,
+      "data_size": 475356.94155159226,
+      "computation_complexity": 220.73813075360965,
+      "arrival_rate": 0.15186768899144393,
+      "priority": 1.9337303057626514,
+      "max_delay": 0.3484764207998208,
+      "source_device_id": 8
+    },
+    {
+      "id": 24,
+      "data_size": 833498.2862765096,
+      "computation_complexity": 229.96228877327442,
+      "arrival_rate": 0.19532461733998674,
+      "priority": 1.9398126015074624,
+      "max_delay": 0.4574074825823232,
+      "source_device_id": 11
+    },
+    {
+      "id": 25,
+      "data_size": 211270.06120917632,
+      "computation_complexity": 344.76295402004575,
+      "arrival_rate": 0.16080768130457493,
+      "priority": 1.9215141621804563,
+      "max_delay": 0.33374130359080634,
+      "source_device_id": 19
+    },
+    {
+      "id": 26,
+      "data_size": 747125.9701020597,
+      "computation_complexity": 290.0578932545312,
+      "arrival_rate": 0.19158894324249637,
+      "priority": 1.9230379331064515,
+      "max_delay": 0.28357577366075076,
+      "source_device_id": 15
+    },
+    {
+      "id": 27,
+      "data_size": 300327.9273695612,
+      "computation_complexity": 298.8460745265263,
+      "arrival_rate": 0.11833039738405778,
+      "priority": 1.8503373285227218,
+      "max_delay": 0.49404025777159355,
+      "source_device_id": 10
+    },
+    {
+      "id": 28,
+      "data_size": 720798.821636062,
+      "computation_complexity": 340.5537071471103,
+      "arrival_rate": 0.11024383249241543,
+      "priority": 1.9920293486096436,
+      "max_delay": 0.3427815475660503,
+      "source_device_id": 0
+    },
+    {
+      "id": 29,
+      "data_size": 439045.78679610166,
+      "computation_complexity": 223.9813015738364,
+      "arrival_rate": 0.12763508993112224,
+      "priority": 1.853378658168077,
+      "max_delay": 0.1053564830091939,
+      "source_device_id": 7
+    },
+    {
+      "id": 30,
+      "data_size": 481220.66083569877,
+      "computation_complexity": 217.34097751528964,
+      "arrival_rate": 0.12512417270808499,
+      "priority": 1.8440327206165512,
+      "max_delay": 0.26451792888947406,
+      "source_device_id": 2
+    },
+    {
+      "id": 31,
+      "data_size": 314940.05706721736,
+      "computation_complexity": 250.45907922326006,
+      "arrival_rate": 0.19186352243465785,
+      "priority": 1.9395460830749625,
+      "max_delay": 0.22640939886411765,
+      "source_device_id": 11
+    },
+    {
+      "id": 32,
+      "data_size": 163074.05592136443,
+      "computation_complexity": 49.8370921555895,
+      "arrival_rate": 0.2978938761541709,
+      "priority": 0.5783169760602358,
+      "max_delay": 0.8500838512293272,
+      "source_device_id": 16
+    },
+    {
+      "id": 33,
+      "data_size": 93591.85938021156,
+      "computation_complexity": 72.36102686366321,
+      "arrival_rate": 0.37335388034978384,
+      "priority": 0.5832781421855868,
+      "max_delay": 0.6948398061289002,
+      "source_device_id": 10
+    },
+    {
+      "id": 34,
+      "data_size": 110338.68748364205,
+      "computation_complexity": 78.1705260804691,
+      "arrival_rate": 0.3045849723183278,
+      "priority": 0.542145062972313,
+      "max_delay": 1.3335614295110134,
+      "source_device_id": 17
+    },
+    {
+      "id": 35,
+      "data_size": 93192.99887655023,
+      "computation_complexity": 33.43036113545845,
+      "arrival_rate": 0.3260132999946939,
+      "priority": 0.8695972544006315,
+      "max_delay": 0.8933476968640518,
+      "source_device_id": 11
+    },
+    {
+      "id": 36,
+      "data_size": 252095.91010621042,
+      "computation_complexity": 23.955270120544295,
+      "arrival_rate": 0.28330825837077184,
+      "priority": 0.9407686609133752,
+      "max_delay": 1.0674636648006999,
+      "source_device_id": 18
+    },
+    {
+      "id": 37,
+      "data_size": 128546.82305349558,
+      "computation_complexity": 25.85966383756903,
+      "arrival_rate": 0.289060128658662,
+      "priority": 0.9068660140326048,
+      "max_delay": 0.5994915659399969,
+      "source_device_id": 8
+    },
+    {
+      "id": 38,
+      "data_size": 256286.4324893407,
+      "computation_complexity": 49.139514077022014,
+      "arrival_rate": 0.25869717257294156,
+      "priority": 0.9053370101678591,
+      "max_delay": 0.8009680503587949,
+      "source_device_id": 4
+    },
+    {
+      "id": 39,
+      "data_size": 159251.23362549752,
+      "computation_complexity": 24.241750181584457,
+      "arrival_rate": 0.330133727807909,
+      "priority": 0.5397571388915423,
+      "max_delay": 0.7195719558175712,
+      "source_device_id": 13
+    }
+  ],
+  "device_to_edge_links": [
+    {
+      "device_id": 0,
+      "edge_id": 0,
+      "rate": 6182148.601049273,
+      "bandwidth": 5095416.455532871
+    },
+    {
+      "device_id": 0,
+      "edge_id": 1,
+      "rate": 2727750.547007883,
+      "bandwidth": 7376704.828894154
+    },
+    {
+      "device_id": 0,
+      "edge_id": 2,
+      "rate": 3019607.3398898286,
+      "bandwidth": 9346133.665846204
+    },
+    {
+      "device_id": 0,
+      "edge_id": 3,
+      "rate": 6858112.9529092945,
+      "bandwidth": 9507470.885543492
+    },
+    {
+      "device_id": 1,
+      "edge_id": 0,
+      "rate": 4659326.840269768,
+      "bandwidth": 7749175.421808344
+    },
+    {
+      "device_id": 1,
+      "edge_id": 1,
+      "rate": 1960793.9150494095,
+      "bandwidth": 9179511.421129521
+    },
+    {
+      "device_id": 1,
+      "edge_id": 2,
+      "rate": 1643811.9459301652,
+      "bandwidth": 6824836.346635985
+    },
+    {
+      "device_id": 1,
+      "edge_id": 3,
+      "rate": 7627390.915410533,
+      "bandwidth": 7627147.360165448
+    },
+    {
+      "device_id": 2,
+      "edge_id": 0,
+      "rate": 1362643.8588755892,
+      "bandwidth": 6663866.16309987
+    },
+    {
+      "device_id": 2,
+      "edge_id": 1,
+      "rate": 8530147.238583874,
+      "bandwidth": 9734993.872831898
+    },
+    {
+      "device_id": 2,
+      "edge_id": 2,
+      "rate": 6020644.239514471,
+      "bandwidth": 9458016.123986136
+    },
+    {
+      "device_id": 2,
+      "edge_id": 3,
+      "rate": 5463577.946124474,
+      "bandwidth": 9386983.61722869
+    },
+    {
+      "device_id": 3,
+      "edge_id": 0,
+      "rate": 6496864.548196835,
+      "bandwidth": 7359951.77001115
+    },
+    {
+      "device_id": 3,
+      "edge_id": 1,
+      "rate": 1935914.9066760757,
+      "bandwidth": 8118636.404040599
+    },
+    {
+      "device_id": 3,
+      "edge_id": 2,
+      "rate": 2084972.0729505941,
+      "bandwidth": 6513281.62255159
+    },
+    {
+      "device_id": 3,
+      "edge_id": 3,
+      "rate": 8326159.411794152,
+      "bandwidth": 9259262.545595644
+    },
+    {
+      "device_id": 4,
+      "edge_id": 0,
+      "rate": 2051133.7835000453,
+      "bandwidth": 5777557.337187587
+    },
+    {
+      "device_id": 4,
+      "edge_id": 1,
+      "rate": 8081418.446544602,
+      "bandwidth": 6184474.820380644
+    },
+    {
+      "device_id": 4,
+      "edge_id": 2,
+      "rate": 8897077.131303191,
+      "bandwidth": 6930799.0129351
+    },
+    {
+      "device_id": 4,
+      "edge_id": 3,
+      "rate": 9087149.586122733,
+      "bandwidth": 7161779.163357387
+    },
+    {
+      "device_id": 5,
+      "edge_id": 0,
+      "rate": 6833955.021490592,
+      "bandwidth": 6913251.613850745
+    },
+    {
+      "device_id": 5,
+      "edge_id": 1,
+      "rate": 9107126.007267522,
+      "bandwidth": 9597880.097585078
+    },
+    {
+      "device_id": 5,
+      "edge_id": 2,
+      "rate": 8798553.25979276,
+      "bandwidth": 5949739.708776247
+    },
+    {
+      "device_id": 5,
+      "edge_id": 3,
+      "rate": 1987536.0062369907,
+      "bandwidth": 7053123.954398909
+    },
+    {
+      "device_id": 6,
+      "edge_id": 0,
+      "rate": 8177501.365888693,
+      "bandwidth": 9447690.422434237
+    },
+    {
+      "device_id": 6,
+      "edge_id": 1,
+      "rate": 2509674.124941399,
+      "bandwidth": 9174171.377966184
+    },
+    {
+      "device_id": 6,
+      "edge_id": 2,
+      "rate": 1852524.6308016647,
+      "bandwidth": 6437412.654969577
+    },
+    {
+      "device_id": 6,
+      "edge_id": 3,
+      "rate": 6318652.904261753,
+      "bandwidth": 5967781.405909056
+    },
+    {
+      "device_id": 7,
+      "edge_id": 0,
+      "rate": 9407838.997528989,
+      "bandwidth": 5462945.528788947
+    },
+    {
+      "device_id": 7,
+      "edge_id": 1,
+      "rate": 6225108.637514997,
+      "bandwidth": 6422470.736468769
+    },
+    {
+      "device_id": 7,
+      "edge_id": 2,
+      "rate": 8873442.938163226,
+      "bandwidth": 5390467.345873359
+    },
+    {
+      "device_id": 7,
+      "edge_id": 3,
+      "rate": 9421562.923462616,
+      "bandwidth": 5547371.919839694
+    },
+    {
+      "device_id": 8,
+      "edge_id": 0,
+      "rate": 8787667.1521877,
+      "bandwidth": 15418680.40969639
+    },
+    {
+      "device_id": 8,
+      "edge_id": 1,
+      "rate": 37207051.034258574,
+      "bandwidth": 23340788.162003748
+    },
+    {
+      "device_id": 8,
+      "edge_id": 2,
+      "rate": 33286831.00397995,
+      "bandwidth": 15019609.353882845
+    },
+    {
+      "device_id": 8,
+      "edge_id": 3,
+      "rate": 22333780.212742306,
+      "bandwidth": 22059939.970160116
+    },
+    {
+      "device_id": 9,
+      "edge_id": 0,
+      "rate": 23686469.26643104,
+      "bandwidth": 26931959.44610723
+    },
+    {
+      "device_id": 9,
+      "edge_id": 1,
+      "rate": 7207171.563566214,
+      "bandwidth": 26290159.844682164
+    },
+    {
+      "device_id": 9,
+      "edge_id": 2,
+      "rate": 21007752.60819936,
+      "bandwidth": 21448110.526011165
+    },
+    {
+      "device_id": 9,
+      "edge_id": 3,
+      "rate": 19270285.692766413,
+      "bandwidth": 24893115.617503166
+    },
+    {
+      "device_id": 10,
+      "edge_id": 0,
+      "rate": 10416856.810530283,
+      "bandwidth": 19560782.44700319
+    },
+    {
+      "device_id": 10,
+      "edge_id": 1,
+      "rate": 39390896.32206364,
+      "bandwidth": 29215538.54873574
+    },
+    {
+      "device_id": 10,
+      "edge_id": 2,
+      "rate": 14991029.029601406,
+      "bandwidth": 25282045.371367324
+    },
+    {
+      "device_id": 10,
+      "edge_id": 3,
+      "rate": 24012604.734829277,
+      "bandwidth": 15134058.642913261
+    },
+    {
+      "device_id": 11,
+      "edge_id": 0,
+      "rate": 32542550.944846187,
+      "bandwidth": 17701581.27980925
+    },
+    {
+      "device_id": 11,
+      "edge_id": 1,
+      "rate": 27682588.19791325,
+      "bandwidth": 23332850.28214358
+    },
+    {
+      "device_id": 11,
+      "edge_id": 2,
+      "rate": 26860426.59217084,
+      "bandwidth": 24632067.996138707
+    },
+    {
+      "device_id": 11,
+      "edge_id": 3,
+      "rate": 18623460.070417296,
+      "bandwidth": 21899011.397070233
+    },
+    {
+      "device_id": 12,
+      "edge_id": 0,
+      "rate": 11421158.07619182,
+      "bandwidth": 19125624.153979298
+    },
+    {
+      "device_id": 12,
+      "edge_id": 1,
+      "rate": 20530317.402987488,
+      "bandwidth": 29435559.436040603
+    },
+    {
+      "device_id": 12,
+      "edge_id": 2,
+      "rate": 32435019.2614925,
+      "bandwidth": 20909553.70936226
+    },
+    {
+      "device_id": 12,
+      "edge_id": 3,
+      "rate": 34120786.06038704,
+      "bandwidth": 17743042.29282938
+    },
+    {
+      "device_id": 13,
+      "edge_id": 0,
+      "rate": 28028578.427965023,
+      "bandwidth": 26308231.48440413
+    },
+    {
+      "device_id": 13,
+      "edge_id": 1,
+      "rate": 32429871.6387947,
+      "bandwidth": 17439841.424307663
+    },
+    {
+      "device_id": 13,
+      "edge_id": 2,
+      "rate": 37767449.22256816,
+      "bandwidth": 19358650.05598811
+    },
+    {
+      "device_id": 13,
+      "edge_id": 3,
+      "rate": 10642912.12975945,
+      "bandwidth": 28469184.202288713
+    },
+    {
+      "device_id": 14,
+      "edge_id": 0,
+      "rate": 38139797.84855906,
+      "bandwidth": 25904550.948940847
+    },
+    {
+      "device_id": 14,
+      "edge_id": 1,
+      "rate": 34314710.93802188,
+      "bandwidth": 28299420.7063347
+    },
+    {
+      "device_id": 14,
+      "edge_id": 2,
+      "rate": 14815270.3588968,
+      "bandwidth": 20958420.66920162
+    },
+    {
+      "device_id": 14,
+      "edge_id": 3,
+      "rate": 7495137.780981036,
+      "bandwidth": 18883353.940006226
+    },
+    {
+      "device_id": 15,
+      "edge_id": 0,
+      "rate": 29012026.051464565,
+      "bandwidth": 22312115.113174956
+    },
+    {
+      "device_id": 15,
+      "edge_id": 1,
+      "rate": 22634255.492469728,
+      "bandwidth": 18483840.88098134
+    },
+    {
+      "device_id": 15,
+      "edge_id": 2,
+      "rate": 19799862.384041652,
+      "bandwidth": 20297751.63856564
+    },
+    {
+      "device_id": 15,
+      "edge_id": 3,
+      "rate": 21680457.936742723,
+      "bandwidth": 27982294.34830081
+    },
+    {
+      "device_id": 16,
+      "edge_id": 0,
+      "rate": 33092985.51047702,
+      "bandwidth": 42268113.93377715
+    },
+    {
+      "device_id": 16,
+      "edge_id": 1,
+      "rate": 54639795.455050536,
+      "bandwidth": 47401684.928842776
+    },
+    {
+      "device_id": 16,
+      "edge_id": 2,
+      "rate": 17622956.672441114,
+      "bandwidth": 37847220.884106
+    },
+    {
+      "device_id": 16,
+      "edge_id": 3,
+      "rate": 52233142.76843966,
+      "bandwidth": 47179126.21452158
+    },
+    {
+      "device_id": 17,
+      "edge_id": 0,
+      "rate": 20700203.168764666,
+      "bandwidth": 39701550.06358196
+    },
+    {
+      "device_id": 17,
+      "edge_id": 1,
+      "rate": 89308722.9506068,
+      "bandwidth": 48564993.83830935
+    },
+    {
+      "device_id": 17,
+      "edge_id": 2,
+      "rate": 56229925.08493271,
+      "bandwidth": 38148082.45745377
+    },
+    {
+      "device_id": 17,
+      "edge_id": 3,
+      "rate": 42357060.84496755,
+      "bandwidth": 37183405.737658836
+    },
+    {
+      "device_id": 18,
+      "edge_id": 0,
+      "rate": 91764249.08420648,
+      "bandwidth": 43451313.24378879
+    },
+    {
+      "device_id": 18,
+      "edge_id": 1,
+      "rate": 15816779.88167788,
+      "bandwidth": 46913278.49013604
+    },
+    {
+      "device_id": 18,
+      "edge_id": 2,
+      "rate": 97624300.57752497,
+      "bandwidth": 34386884.45690407
+    },
+    {
+      "device_id": 18,
+      "edge_id": 3,
+      "rate": 54678326.73614715,
+      "bandwidth": 35613427.70417645
+    },
+    {
+      "device_id": 19,
+      "edge_id": 0,
+      "rate": 78994995.79272318,
+      "bandwidth": 30050498.11251403
+    },
+    {
+      "device_id": 19,
+      "edge_id": 1,
+      "rate": 77650114.73494343,
+      "bandwidth": 40374695.01060917
+    },
+    {
+      "device_id": 19,
+      "edge_id": 2,
+      "rate": 57922119.624020904,
+      "bandwidth": 35786004.85039065
+    },
+    {
+      "device_id": 19,
+      "edge_id": 3,
+      "rate": 97671222.22332494,
+      "bandwidth": 33983755.34915586
+    }
+  ],
+  "edge_to_cloud_links": [
+    {
+      "edge_id": 0,
+      "cloud_id": 0,
+      "rate": 252472142.97807765,
+      "bandwidth": 337630044.96144
+    },
+    {
+      "edge_id": 0,
+      "cloud_id": 1,
+      "rate": 82938232.50829476,
+      "bandwidth": 253462622.41188127
+    },
+    {
+      "edge_id": 1,
+      "cloud_id": 0,
+      "rate": 332105444.5028773,
+      "bandwidth": 499438579.6231611
+    },
+    {
+      "edge_id": 1,
+      "cloud_id": 1,
+      "rate": 399616997.18758774,
+      "bandwidth": 397400563.2488233
+    },
+    {
+      "edge_id": 2,
+      "cloud_id": 0,
+      "rate": 190403425.71417642,
+      "bandwidth": 367824575.7273867
+    },
+    {
+      "edge_id": 2,
+      "cloud_id": 1,
+      "rate": 184592176.8166723,
+      "bandwidth": 294723509.3570555
+    },
+    {
+      "edge_id": 3,
+      "cloud_id": 0,
+      "rate": 351971584.88405323,
+      "bandwidth": 204936585.09659597
+    },
+    {
+      "edge_id": 3,
+      "cloud_id": 1,
+      "rate": 93969251.20009635,
+      "bandwidth": 387554547.7222752
+    }
+  ]
+}
