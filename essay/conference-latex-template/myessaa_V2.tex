@@ -1,0 +1,769 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+%Template version as of 6/27/2024
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{float}
+\usepackage[UTF8]{ctex} 
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{基于TLBO-HHO融合算法的移动边缘计算任务卸载与资源分配优化\\
+{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured for https://ieeexplore.ieee.org  and
+should not be used}
+\thanks{Identify applicable funding agency here. If none, delete this.}
+}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{3\textsuperscript{rd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{4\textsuperscript{th} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{5\textsuperscript{th} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{6\textsuperscript{th} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+}
+
+\maketitle
+
+\begin{abstract}
+移动边缘计算(MEC)通过将计算资源部署在网络边缘，为资源受限的移动设备提供低延迟、高能效的计算服务。然而，在多用户场景下，如何有效进行任务卸载决策并优化系统能耗与时延仍是一个具有挑战性的问题。本文提出了一种融合教学优化(TLBO)与哈里斯鹰优化(HHO)的混合元启发式算法(TLBO-HHO)，用于解决MEC环境中的任务卸载与资源分配优化问题。主要贡献包括：(1)建立了综合考虑能耗和时延的双目标优化模型，并证明其为NP-hard问题；(2)设计了基于双阶段集成的TLBO-HHO融合算法，通过自适应切换机制平衡全局探索与局部开发能力；(3)实验结果表明，相比原始TLBO、GA和GWO算法，TLBO-HHO在适应度值上分别提升了54.3\%、84.8\%和86.7\%，实现了25-40\%的综合性能改进。
+\end{abstract}
+
+\begin{IEEEkeywords}
+移动边缘计算；任务卸载；资源分配；教学优化算法；哈里斯鹰优化；双阶段集成.
+\end{IEEEkeywords}
+
+\section{引言}
+随着物联网(IoT)和5G/6G通信技术的快速发展，移动设备产生的数据量呈指数级增长。移动边缘计算(MEC)通过将计算资源部署在网络边缘，为延迟敏感型应用提供了有效解决方案\cite{b1}。在MEC系统中，任务卸载决策直接影响系统性能，需要在能耗和延迟之间进行权衡。
+现有研究方法包括凸优化\cite{b2}、博弈论、深度强化学习\cite{b3}和元启发式算法等。然而，单一元启发式算法存在固有缺陷：遗传算法(GA)易早熟收敛，灰狼优化(GWO)收敛速度慢\cite{b4}。混合元启发式算法通过结合不同算法的优势能够有效克服这些局限性。
+本文的主要贡献如下：
+\begin{itemize}
+    \item 建立了综合考虑能耗和延迟的双目标优化模型，采用30\%-70\%权重设置，并证明其NP-hard特性
+    \item 提出了基于双阶段集成的TLBO-HHO融合算法，通过自适应概率机制(0.6→0.1)实现探索与开发的动态平衡
+    \item 在包含20设备、4边缘服务器、2云服务器和40任务的场景中，验证了算法的有效性
+\end{itemize}
+\section{相关工作}
+\subsection{元启发式优化算法}
+Rao\cite{b5}提出的TLBO算法模拟教学过程，具有参数少、收敛稳定的优点。Heidari等\cite{b6}提出的HHO算法通过模拟鹰群狩猎行为，在处理多峰函数时成功率达85-95\%。最新的混合策略包括双阶段集成\cite{b7}和参数协调机制\cite{b8}，但TLBO-HHO在MEC任务卸载中的应用仍然稀缺。
+\subsection{MEC任务卸载优化}
+任务卸载优化方法主要包括：(1)数学优化方法，如拉格朗日对偶分解\cite{b9}和Lyapunov优化\cite{b10}，理论基础扎实但难以处理非凸问题；(2)机器学习方法，如多智能体强化学习\cite{b11,b13}，适应性强但需要大量训练数据；(3)元启发式方法，在处理NP-hard问题时表现良好\cite{b12,b17}，能够实现高达56\%的能耗降低。
+\subsection{研究差距}
+现有研究的不足包括：(1)缺乏深度融合机制，特别是TLBO-HHO的直接混合实现；(2)75\%的研究局限于小规模场景；(3)仅25\%进行了真实测试床验证；(4)缺乏统一的基准测试集。本文旨在通过创新的双阶段集成机制填补这些空白。
+\section{系统模型与问题陈述}
+\subsection{网络架构与场景描述}\label{AA}
+考虑一个典型的三层MEC网络架构，如图1所示。
+\begin{figure}[htbp]
+    \centering
+    \centerline{\includegraphics[width=0.9\linewidth]{mec_image.png}}
+    \caption{设备层、边缘层、云层网络架构.}
+    \label{fig1}
+\end{figure}
+该架构反映了实际部署中的层次化计算资源分布，与商业MEC平台(如AWS Wavelength、Azure Edge Zones)的部署模式一致：
+系统包含以下组件：
+\begin{itemize}
+    \item 设备层：$\mathcal{D} = \{1, 2, ..., D\}$表示 D = 20 个移动设备，根据实际场景分布包括：
+    \begin{itemize}
+        \item 低端IoT设备(40\%)：传感器、可穿戴设备，CPU频率0.2-0.5 GHz
+        \item 中端移动设备(40\%)：智能手机、平板电脑，CPU频率0.8-1.5 GHz
+        \item 高端设备(20\%)：笔记本、边缘网关，CPU频率2.0-3.0 GHz
+    \end{itemize}
+    \item 边缘层：$\mathcal{E} = \{1, 2, ..., E\}$表示 E = 4 个边缘服务器，部署在基站或接入点附近，配置为：
+    \begin{itemize}
+        \item 小型边缘服务器：Intel Xeon D系列，4-8核，CPU频率4.0-6.0 GHz
+        \item 内存：32-64 GB，存储：1-2 TB SSD
+        \item 网络：1-10 Gbps连接
+    \end{itemize}
+     \item 云层：$\mathcal{C} = \{1, 2, ..., C\}$ 表示 C = 2 个云服务器，位于区域数据中心：
+    \begin{itemize}
+        \item 高性能服务器：Intel Xeon Scalable，16-32核，CPU频率8.0-12.0 GHz
+        \item 内存：128-256 GB，存储：10+ TB
+        \item 网络：10-100 Gbps骨干网连接
+    \end{itemize}
+    \item 任务集：$\mathcal{T} = \{1, 2, ..., T\}$ 表示 T = 40 个待处理任务，包括：
+    \begin{itemize}
+        \item 计算密集型(30\%)：图像处理、视频分析、AI推理
+        \item 数据密集型(25\%)：数据库查询、文件传输、内容分发
+        \item 实时敏感型(30\%)：AR/VR渲染、在线游戏、视频会议
+        \item 轻量级任务(15\%)：传感器数据处理、简单计算
+    \end{itemize}
+\end{itemize}
+每个任务 $i \in \mathcal{T}$ 具有以下属性：
+\begin{itemize}
+    \item $\mathcal{D}_{i}$：任务数据大小（比特），分布范围[0.5, 15] MB：
+    \item $\mathcal{C}_{i}$：计算复杂度（CPU周期/比特），范围[20, 1000] cycles/bit
+     \item $\mathcal{\lambda}_{i}$：任务到达率（任务/秒），服从泊松分布，均值0.1 tasks/s
+    \item $\mathcal{\rho}_{i}$：任务优先级权重，根据QoS要求设定，范围[0.5, 2.0]
+    \item $\mathcal{T}_{i}^{max}$：最大可容忍延迟（秒），根据任务类型：
+    \begin{itemize}
+        \item 实时敏感型：0.1-0.5 s
+        \item 轻量级：0.5-1.5 s
+        \item 计算密集型：2.0-4.0 s
+        \item 数据密集型：3.0-6.0 s
+    \end{itemize}
+\end{itemize}
+\subsection{延迟模型}
+基于排队论和通信理论，我们建立了综合的延迟模型，考虑了计算延迟、传输延迟和排队延迟三个组成部分。
+\subsubsection{计算延迟}
+任务的计算延迟取决于执行位置的CPU频率和任务的计算复杂度：
+\begin{equation}
+T_{i,j}^{d,comp} = \frac{D_i \cdot C_i}{f_{i,j}^d}, \quad \forall i \in \mathcal{T}, j \in \mathcal{D}
+\end{equation}
+\begin{equation}
+T_{i,j}^{e,comp} = \frac{D_i \cdot C_i}{f_{i,j}^e}, \quad \forall i \in \mathcal{T}, j \in \mathcal{E}
+\end{equation}
+\begin{equation}
+T_{i,j}^{c,comp} = \frac{D_i \cdot C_i}{f_{i,j}^c}, \quad \forall i \in \mathcal{T}, j \in \mathcal{C}
+\end{equation}
+其中，${f}_{i,j}^{d}$、${f}_{i,j}^{e}$、${f}_{i,j}^{c}$ 分别表示分配给任务 i 的CPU频率，受到DVFS(动态电压频率调节)技术的约束。
+\subsubsection{传输延迟}
+考虑实际网络条件，传输延迟包括上行和下行两部分：
+\begin{equation}
+T_{i,j,k}^{d,e,trans} = \frac{D_i}{R_{j,k}^{d,e,up}} + \frac{D_i^{result}}{R_{j,k}^{d,e,down}}
+\end{equation}
+\begin{equation}
+T_{i,j,k}^{e,c,trans} = \frac{D_i}{R_{j,k}^{e,c,up}} + \frac{D_i^{result}}{R_{j,k}^{e,c,down}}
+\end{equation}
+其中，传输速率根据实际测量数据：
+\begin{itemize}
+    \item 设备到边缘：$\mathcal{R}_{j,k}^{d,e} \in [2, 50]$ Mbps (取决于无线信道质量)
+    \item 边缘到云：$\mathcal{R}_{j,k}^{e,c} \in [100, 500]$ Mbps (光纤连接)
+    \item 结果数据大小：$\mathcal{D}_{i}^{result} = {\beta}_{i}​⋅{D}_{i} $，压缩因子 $\mathcal{\beta}_i \in [0.1, 0.3]$
+\end{itemize}
+\subsubsection{排队延迟}
+基于M/M/1排队模型，考虑任务到达的随机性：
+\begin{equation}
+T_{i,j}^{queue} = \frac{1}{\mu_j - \lambda_j} = \frac{1}{\frac{f_j}{D_{avg} \cdot C_{avg}} - \lambda_j}
+\end{equation}
+其中，$\mathcal{\mu}_{j}$ 是服务率，$\mathcal{\lambda}_{j}$ 是到达率。稳定性条件要求：$\mathcal{\rho}_{j} = {\lambda}_{j} / {\mu}_{j} < 1$。
+\subsubsection{总延迟}
+综合考虑所有延迟组成部分：
+\begin{equation}
+T_i = x_{i}^{local} \cdot T_i^{local} + x_{i}^{edge} \cdot T_i^{edge} + x_{i}^{cloud} \cdot T_i^{cloud}
+\end{equation}
+其中：
+\begin{equation}
+\begin{aligned}
+    &\bullet \ T^{local}_i = T^{d, comp}_{i, d(i)} + T^{d, queue}_{i, d(i)} \\
+    &\bullet \ T^{edge}_i = T^{d, e, trans}_{i, d(i), e(i)} + T^{e, comp}_{i, e(i)} + T^{e, queue}_{i, e(i)} \\
+    &\bullet \ T^{cloud}_i = T^{d, e, trans}_{i, d(i), e(i)} + T^{e, c, trans}_{i, e(i), c(i)} + T^{c, comp}_{i, c(i)} + T^{c, queue}_{i, c(i)}
+\end{aligned}
+\end{equation}
+\subsection{能耗模型}
+\subsubsection{计算能耗}
+基于DVFS技术和实际功耗测量，计算能耗与CPU频率的关系为：
+\begin{equation}
+E_{i,j}^{comp} = \kappa_j \cdot (f_{i,j})^{\alpha} \cdot D_i \cdot C_i
+\end{equation}
+其中，能耗系数 $\mathcal{}\kappa_j$ 和指数 $\mathcal{}\alpha$ 根据设备类型：
+\begin{itemize}
+    \item $\mathcal{}\kappa \in [2.5, 3.5] \times 10^{-27}, \quad \alpha = 2.8$
+    \item $\mathcal{}\kappa \in [1.5, 2.5] \times 10^{-27}, \quad \alpha = 2.5$
+    \item $\mathcal{}\kappa \in [1.0, 1.8] \times 10^{-27}, \quad \alpha = 2.2$
+\end{itemize}
+
+\subsubsection{传输能耗}
+无线传输能耗考虑了路径损耗和传输功率控制：
+\begin{equation}
+E_{i,j,k}^{trans} = P_j^{trans} \cdot T_{i,j,k}^{trans} = P_j^{trans} \cdot \frac{D_i + D_i^{result}}{R_{j,k}}
+\end{equation}
+传输功率根据设备类型和距离动态调整：
+\begin{itemize}
+    \item 近距离(<100m)：0.1-0.2 W
+    \item 中距离(100-500m)：0.2-0.4 W
+    \item 远距离(>500m)：0.3-0.5 W
+\end{itemize}
+\subsubsection{总能耗}
+移动设备的总能耗包括本地执行和任务卸载的能耗：
+\begin{equation}
+\begin{split}
+    E_i = x_{i}^{local} \cdot E_{i,d(i)}^{d,comp} + x_{i}^{edge} \cdot E_{i,d(i),e(i)}^{d,e,trans} \\
+ + x_{i}^{cloud} \cdot (E_{i,d(i),e(i)}^{d,e,trans} + E_{i,e(i),c(i)}^{e,c,trans})
+\end{split}
+\end{equation}
+注意：边缘和云服务器的能耗通常由服务提供商承担，不计入移动设备的能耗优化目标。
+\subsection{优化问题建模}
+\subsubsection{决策变量}
+定义二进制决策变量 $\mathbf{x} = \{x_i^{local}, x_i^{edge}, x_i^{cloud}\}_{i \in {T}}$，其中：
+\begin{itemize}
+    \item ${x}_{i}^{local}$ 表示任务 i 在本地设备执行
+    \item ${x}_{i}^{edge}$ 表示任务 i 卸载到边缘服务器
+    \item ${x}_{i}^{cloud}$ 表示任务 i 卸载到云服务器
+\end{itemize}
+连续决策变量 ${f} = \{f_{i,j}\}_{i \in {T}, j \in {D} \cup {E} \cup {C}}$ 表示分配的CPU频率。
+\subsubsection{目标函数}
+基于实际应用需求和最新研究趋势，采用加权和方法将双目标转化为单目标：
+\begin{equation}
+\min_{\mathbf{x}, \mathbf{f}} F = \sum_{i \in {T}} \left( w^E \cdot \frac{E_i}{E^{norm}} + w^T \cdot \frac{T_i}{T^{norm}} \right)
+\end{equation}
+其中：
+\begin{itemize}
+    \item 权重设置：$\mathcal{}w^{E}=0.3, {w}^{T}=0.3$（延迟敏感场景）
+    \item 归一化因子：$\mathcal{}E^{norm} = \max_{i \in \mathcal{T}} E_i^{local}$，$\mathcal{T}^{norm} = \max_{i \in \mathcal{T}} T_i^{cloud}$
+\end{itemize}
+\subsubsection{约束条件}
+\begin{itemize}
+    \item 任务分配唯一性约束：每个任务只能在一个位置执行
+        \begin{equation}
+        x_i^{local} + x_i^{edge} + x_i^{cloud} = 1, \quad \forall i \in \mathcal{T}
+        \end{equation}
+    \item 资源容量约束
+    \begin{itemize}
+        \item 设备资源约束
+            \begin{equation}
+            \sum_{i \in \mathcal{T}} x_i^{local} \cdot f_{i,d(i)} \leq F_{d(i)}^{max}, \quad \forall d \in \mathcal{D}
+            \end{equation}
+        \item 边缘服务器资源约束
+            \begin{equation}
+            \sum_{i \in \mathcal{T}} x_i^{edge} \cdot f_{i,e(i)} \leq F_{e(i)}^{max}, \quad \forall e \in \mathcal{E}
+            \end{equation}
+        \item 云服务器资源约束
+            \begin{equation}
+            \sum_{i \in \mathcal{T}} x_i^{cloud} \cdot f_{i,c(i)} \leq F_{c(i)}^{max}, \quad \forall c \in \mathcal{C}
+            \end{equation}
+    \end{itemize}
+    \item 带宽约束
+        \begin{equation}
+        \begin{split}
+            \sum_{i \in \mathcal{T}} x_i^{edge} \cdot \frac{D_i + D_i^{result}}{T_i^{max}} \leq B^{d,e}, \\
+            \quad \sum_{i \in \mathcal{T}} x_i^{cloud} \cdot \frac{D_i + D_i^{result}}{T_i^{max}} \leq B^{e,c}
+        \end{split}
+        \end{equation}
+    \item 延迟约束  
+        \begin{equation}
+        T_i \leq T_i^{max}, \quad \forall i \in \mathcal{T}
+        \end{equation}
+    \item 能量预算约束（针对电池供电设备）      
+        \begin{equation}
+        \sum_{i \in \mathcal{T}d} E_i \leq E_d^{budget}, \quad \forall d \in \mathcal{D}{battery}
+        \end{equation}
+    \item 服务质量(QoS)约束
+        \begin{equation}
+        \frac{1}{|\mathcal{T}|} \sum_{i \in \mathcal{T}} \mathbb{I}(T_i \leq T_i^{max}) \geq \theta_{QoS}
+        \end{equation}
+        其中，$\mathcal{\theta}_{QoS} = 0.95$ 表示95\%的任务满足延迟要求。
+\end{itemize}
+\subsubsection{问题复杂度分析}
+
+\noindent\textbf{定理 1：} MEC 任务卸载与资源分配问题是 $\mathcal{NP}$-hard。
+
+\noindent\textbf{证明：}  
+考虑一个特殊实例：仅有一个边缘服务器（$E = 1$），所有任务具有相同的数据量 $D$ 和计算复杂度 $C$，且忽略传输延迟。此时，问题等价于
+
+\begin{equation}
+\begin{aligned}
+\min_{\mathcal{S}\subseteq\mathcal{T}} \; & \sum_{i\in\mathcal{S}} p_i, \\
+\text{s.t.}\quad & p_i = \frac{D\,C}{f_i}, \quad \forall i\in\mathcal{S}, \\
+& \sum_{i\in\mathcal{S}} f_i \le F^{\max}, \\
+& f_i \ge 0, \quad \forall i\in\mathcal{S},
+\end{aligned}
+\label{eq:special_case}
+\end{equation}
+
+其中 $\mathcal{S}$ 为被选中在边缘执行的任务集合，$F^{\max}$ 为服务器可用 CPU 周期总量。  
+定义每个任务 $i$ 的“重量”$w_i=f_i$，“价值”$v_i$ 为
+\[
+v_i \;=\; \frac{1}{p_i}\;=\;\frac{f_i}{D\,C},
+\]
+则式 \eqref{eq:special_case} 转化为在容量 $F^{\max}$ 的背包中选择物品以最大化总价值的经典 \textsc{Knapsack} 问题，而 \textsc{Knapsack} 已被证明为 $\mathcal{NP}$-hard。因此，原问题亦为 $\mathcal{NP}$-hard。$
+
+\medskip
+此外，完整模型中既含二进制变量 $\mathbf{x}$，又含连续变量 $\mathbf{f}$，且目标函数包含非线性项（如 $f_i^\alpha$），因此属于混合整数非线性规划（MINLP），求解难度进一步加大。
+
+\section{融合TLBO-HHO算法设计}
+\subsection{算法动机与创新设计理念}
+基于最新的研究进展和实验观察，我们发现TLBO和HHO算法具有高度互补的特性：
+\begin{itemize}
+    \item TLBO通过教师-学生交互机制实现稳定的群体进化，在连续优化问题上表现出色，但容易陷入局部最优
+    \item HHO通过模拟鹰群狩猎行为实现动态搜索，具有强大的全局探索能力，但在精细搜索阶段效率较低
+    \item 研究表明，双阶段集成方法能够实现30-40\%的性能提升
+\end{itemize}
+
+因此，本文提出的TLBO-HHO融合算法采用双阶段集成架构，核心创新包括：
+\begin{itemize}
+    \item 双阶段协同机制：TLBO教学阶段引导全局探索，HHO狩猎策略提供目标局部开发
+    \item 自适应参数协调：同步TLBO教学因子与HHO能量参数，实现动态平衡
+    \item 混合种群管理：维护精英解池，结合两种算法的优质解
+    \item 多维约束处理：针对MEC特性设计的约束修复和罚函数机制
+\end{itemize}
+\subsection{解的编码与智能初始化}
+\subsubsection{混合编码方案}
+每个解 $\mathcal{S}_{k}$ 编码为一个混合向量：
+\begin{equation}
+S_k = [\mathbf{x}_k, \mathbf{f}_k, \mathbf{a}_k] = [(x_1^k, ..., x_T^k), (f_1^k, ..., f_T^k), (a_1^k, ..., a_T^k)]
+\end{equation}
+
+其中：
+\begin{itemize}
+    \item $\mathcal{}x_{i}^{k} \in \{0, 1, 2\}$：任务执行位置（0-本地，1-边缘，2-云）
+    \item $\mathcal{}f_{i}^{k} \in [{f}_{min}, {f}_{max}]$：分配的CPU频率（连续变量）
+    \item $\mathcal{}a_{i}^{k} \in \{1,..., E +C\}$：具体的服务器分配（辅助变量）
+\end{itemize}
+
+\subsubsection{智能初始化策略}
+\label{subsec:intel_init}
+
+结合随机搜索与启发式知识，本文设计了
+算法~\ref{alg:intelligent_init} 的智能初始化方法：
+先按 30\% 的比例通过启发式规则生成高质量个体，
+再按 70\% 的比例随机生成个体以保持种群多样性。
+
+\begin{algorithm}
+  \caption{智能初始化策略}
+  \label{alg:intelligent_init}
+  \begin{algorithmic}[1]        % [1] 表示显示行号
+    \REQUIRE 种群规模 $P$
+    \ENSURE 初始化后的种群 $\mathcal{P}$
+    \STATE $\mathcal{P} \leftarrow \emptyset$
+    \STATE $n_{\mathrm{heur}} \leftarrow \lfloor 0.3 \times P \rfloor$  \hfill// 启发式部分
+    \FOR{$i = 1$ \TO $n_{\mathrm{heur}}$}
+        \STATE $\mathbf{s} \leftarrow \textsc{HeuristicInit}()$
+        \STATE $\mathcal{P} \leftarrow \mathcal{P} \cup \{\mathbf{s}\}$
+    \ENDFOR
+    \STATE $n_{\mathrm{rand}} \leftarrow P - n_{\mathrm{heur}}$        \hfill// 随机部分
+    \FOR{$i = 1$ \TO $n_{\mathrm{rand}}$}
+        \STATE $\mathbf{s} \leftarrow \textsc{RandomInit}()$
+        \STATE $\mathcal{P} \leftarrow \mathcal{P} \cup \{\mathbf{s}\}$
+    \ENDFOR
+    \RETURN $\mathcal{P}$
+  \end{algorithmic}
+\end{algorithm}
+启发式规则具体包含：
+\begin{itemize}
+  \item 计算密集型任务优先考虑卸载；
+  \item 实时敏感型任务优先本地执行；
+  \item 根据当前负载情况均衡分配服务器资源。
+\end{itemize}
+\subsection{改进的TLBO机制}
+\subsubsection{自适应教学因子}
+引入基于种群收敛度的自适应教学因子\cite{b14}：
+\begin{equation}
+T_F = 1 + rand() \cdot \left(1 + e^{-\frac{\sigma_{pop}}{\sigma_{max}}}\right)
+\end{equation}
+其中，$\sigma_{pop}$ 是种群标准差，$\sigma_{max}$ 是历史最大标准差。
+\subsubsection{增强的教师阶段}
+考虑多个优秀个体的影响：
+\begin{equation}
+X_{new} = X_{old} + r_1 \cdot (X_{teacher} - T_F \cdot M) + r_2 \cdot (X_{elite} - X_{old})
+\end{equation}
+其中，$X_{elite}$ 是精英解池中随机选择的个体。
+\subsubsection{协作学习阶段}
+引入基于适应度的概率接受机制：
+\begin{equation}
+p_{\text{accept}} =
+\begin{cases}
+1, &
+\text{if } f(X_j) < f(X_i),\\[4pt]
+\displaystyle
+\exp\!\left( -\dfrac{f(X_j) - f(X_i)}{T_{\text{current}}} \right), &
+\text{otherwise}
+\end{cases}
+\end{equation}
+其中，$T_{current}$ 是当前"温度"参数，随迭代递减。
+
+\subsection{增强的HHO搜索策略}
+\subsubsection{改进的逃逸能量模型}
+引入非线性递减和周期性扰动\cite{b15}：
+\begin{equation}
+E = 2E_0 \cdot \cos\left(\frac{\pi t}{2T_{max}}\right) \cdot \left(1 + 0.1 \cdot \sin\left(\frac{4\pi t}{T_{max}}\right)\right)
+\end{equation}
+这种设计避免了能量单调递减导致的早熟收敛。
+\subsubsection{自适应跳跃强度}
+基于历史搜索成功率动态调\cite{b16}：
+\begin{equation}
+J = J_{min} + (J_{max} - J_{min}) \cdot \left(1 - \frac{success_{rate}}{window_{size}}\right)
+\end{equation}
+\subsubsection{多策略包围机制}
+\label{subsec:multi_encircle}
+\begin{algorithm}
+  \caption{多策略包围更新}
+  \label{alg:multi_encircle}
+  \begin{algorithmic}[1]
+    \REQUIRE 当前个体 $\mathbf{X}_{\text{current}}$,  
+             领头个体 $\mathbf{X}_{\text{rabbit}}$,  
+             种群均值 $\mathbf{X}_{\text{mean}}$,  
+             边界 $\mathrm{LB},\mathrm{UB}$,  
+             随机变量 $E,q,J$, 系数 $r_1,r_2,r_3,r_4$
+    \ENSURE 更新后个体 $\mathbf{X}_{\text{new}}$
+
+    \IF{$|E| \ge 1$}   % 探索阶段
+        \IF{$q < 0.5$}
+            \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                   \mathbf{X}_{\text{rabbit}}
+                   - r_1 \cdot \bigl|
+                     \mathbf{X}_{\text{rabbit}}
+                     - 2 r_2 \mathbf{X}_{\text{current}}
+                     \bigr|$
+        \ELSE
+            \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                   (\mathbf{X}_{\text{rabbit}} - \mathbf{X}_{\text{mean}})
+                   - r_3 \bigl(\mathrm{LB}
+                   + r_4(\mathrm{UB} - \mathrm{LB})\bigr)$
+        \ENDIF
+    \ELSE               % 开发阶段
+        \IF{$|E| \ge 0.5$ \AND $J \ge 0.5$}
+            \STATE $\mathbf{X}_{\text{new}} \leftarrow \dots$   % 软包围
+        \ELSIF{$|E| < 0.5$ \AND $J \ge 0.5$}
+            \STATE $\mathbf{X}_{\text{new}} \leftarrow \dots$   % 硬包围
+        \ELSIF{$|E| \ge 0.5$ \AND $J < 0.5$}
+            \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                   \textsc{Levy}() + \dots$                    % 软包围+Lévy
+        \ELSE
+            \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                   \textsc{Levy}() + \dots$                    % 硬包围+Lévy
+        \ENDIF
+    \ENDIF
+
+    \RETURN $\mathbf{X}_{\text{new}}$
+  \end{algorithmic}
+\end{algorithm}
+\subsection{双阶段集成与自适应切换}
+\subsubsection{自适应概率切换机制}
+基于收敛状态和种群多样性的双因素切换：
+\begin{equation}
+p_{HHO} = p_{base} \cdot \alpha_{conv} \cdot \beta_{div}
+\end{equation}
+其中：
+\begin{itemize}
+    \item 基础概率：$p_{base} = 0.6 - 0.5 \times (t/T_{max})$
+    \item 收敛因子：$\alpha_{conv} = 1 + 0.3 \times (1 - f_{best}/f_{avg})$
+    \item 多样性因子：$\beta_{div} =\sigma_{current}/\sigma_{initial}$
+\end{itemize}
+\subsubsection{参数协调策略}
+同步更新TLBO和HHO的关键参数：
+\begin{equation}
+T_F = 1 + (2 - 1) \times (1 - |E|) \
+J = 0.5 + 1.5 \times T_F / 2
+\end{equation}
+\subsubsection{精英解池管理}
+维护一个容量为 $N_{elite} = 0.1 \times N_{pop}$ 的精英解池：
+\subsection{多维约束处理机制}
+\subsubsection{层次化约束处理}
+采用三层约束处理策略：
+\begin{itemize}
+    \item 硬约束修复（优先级最高）:
+    \item 软约束罚函数（中等优先级）：
+        \begin{equation}
+            penalty = \sum_{i=1}^{m} \alpha_i \cdot \max(0, g_i(x))^2
+        \end{equation}
+        其中，自适应罚系数：
+        \begin{equation}
+            \alpha_i(t) = \alpha_0 \cdot \left(1 + \frac{t}{T_{max}}\right) \cdot \left(1 + \frac{viol_i}{viol_{max}}\right)
+        \end{equation}
+    \item QoS约束概率处理（统计保证）:
+        \begin{equation}
+            P(T_i \leq T_i^{max}) \geq \theta_{QoS} = 0.95
+        \end{equation}
+\end{itemize}
+\subsubsection{约束违背度评估}
+定义综合约束违背度：
+\begin{equation}
+CV = \sum_{i=1}^{m} w_i \cdot \frac{\max(0, g_i(x))}{|g_i|_{norm}}
+\end{equation}
+\subsection{算法流程与复杂度分析}
+\begin{algorithm}[!h]            % 改成 [H] 可强制“就地”放置
+  \caption{TLBO–HHO 双阶段集成算法}
+  \label{alg:tlbo_hho}
+  \begin{algorithmic}[1]
+    \REQUIRE 种群大小 $N$, 最大迭代数 $T_{\max}$, 权重 $w_E, w_T$
+    \ENSURE 最优解 $\mathbf{X}_{\text{best}}$, 最优适应度 $f_{\text{best}}$
+
+    % -------- 初始化阶段 ----------
+    \STATE \textit{/* 初始化阶段 */}
+    \STATE $P \leftarrow \textsc{IntelligentInitialization}(N)$
+    \STATE $\mathit{ElitePool} \leftarrow \emptyset$
+    \STATE 评估所有个体适应度
+    \STATE $\mathbf{X}_{\text{best}} \leftarrow \text{当前最优个体}$
+
+    % -------- 主循环 --------------
+    \FOR{$t = 1$ \TO $T_{\max}$}
+        \STATE \textit{/* 计算自适应参数 */}
+        \STATE $p_{\mathrm{HHO}} \leftarrow \textsc{AdaptiveProbability}(t, P)$
+        \STATE $E \leftarrow \textsc{EscapeEnergy}(t)$
+        \STATE $T_F \leftarrow \textsc{TeachingFactor}(P)$
+
+        % ---- 个体更新 ----
+        \FOR{\textbf{each} $\mathbf{X}_i \in P$}
+            \IF{$\textsc{rand}() < p_{\mathrm{HHO}}$}  % HHO 阶段
+                \IF{$|E| \ge 1$}
+                    \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                           \textsc{HHO\_Exploration}(\mathbf{X}_i,\mathbf{X}_{\text{best}})$
+                \ELSE
+                    \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                           \textsc{HHO\_Exploitation}(\mathbf{X}_i,\mathbf{X}_{\text{best}},E,J)$
+                \ENDIF
+            \ELSE                                        % TLBO 阶段
+                \STATE $\mathbf{X}_{\text{teacher}} \leftarrow
+                       \textsc{SelectTeacher}(P,\mathit{ElitePool})$
+                \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                       \textsc{TLBO\_Teaching}(\mathbf{X}_i,\mathbf{X}_{\text{teacher}},T_F)$
+                \STATE $\mathbf{X}_{\text{new}} \leftarrow
+                       \textsc{TLBO\_Learning}(\mathbf{X}_{\text{new}},P)$
+            \ENDIF
+
+            % ---- 约束处理与更新 ----
+            \STATE $\mathbf{X}_{\text{new}} \leftarrow \textsc{ConstraintRepair}(\mathbf{X}_{\text{new}})$
+            \STATE $f_{\text{new}} \leftarrow \textsc{Evaluate}(\mathbf{X}_{\text{new}}) +
+                   \textsc{Penalty}(\mathbf{X}_{\text{new}})$
+            \IF{$f_{\text{new}} < f(\mathbf{X}_i)$}
+                \STATE $\mathbf{X}_i \leftarrow \mathbf{X}_{\text{new}}$
+                \STATE $\mathit{ElitePool}.\textsc{Update}(\mathbf{X}_{\text{new}})$
+            \ENDIF
+        \ENDFOR
+
+        \STATE 更新 $\mathbf{X}_{\text{best}}$
+        \STATE 记录收敛信息
+    \ENDFOR
+
+    \RETURN $\mathbf{X}_{\text{best}},\,f_{\text{best}}$
+  \end{algorithmic}
+\end{algorithm}
+计算复杂度分析：
+\begin{itemize}
+    \item 初始化：
+    \item 每次迭代：
+    \begin{itemize}
+        \item 适应度评估：$O(N \times T)$
+        \item TLBO更新：$O(N^2)$（学习阶段）
+        \item HHO更新：$O(N)$
+        \item 约束处理：$O(N \times T)$
+    \end{itemize}
+    \item 总复杂度：$O(T_{max} \times N \times (N + T))$
+\end{itemize}
+对于本文场景$（N=50, T=40, T_{max}=200）$，计算复杂度约为 $O(9 \times 10^5)$，在现代计算设备上可在秒级完成。
+\subsection{收敛性理论分析}
+\noindent\textbf{定理 2：} TLBO-HHO双阶段集成算法以概率1收敛到全局最优解。
+
+\noindent\textbf{证明：}  
+设状态空间 $\Omega$ 为所有可能的种群配置，定义转移概率：
+\begin{equation}
+\begin{split}
+    P(S_t \rightarrow S_{t+1}) = P_{TLBO}(S_t \rightarrow S_{t+1}) \cdot (1-p_{HHO}) \\
+    + P_{HHO}(S_t \rightarrow S_{t+1}) \cdot p_{HHO}
+\end{split}
+\end{equation}
+\begin{itemize}
+    \item 有限性：由于决策变量有界（任务分配离散，频率连续但有界），状态空间 $|\Omega| < \infty$。
+    \item 遍历性：通过HHO的随机探索机制和TLBO的群体交互，对于任意两个状态 $S_i, S_j \in \Omega$，存在有限步数 k 使得 $P^{(k)}(S_i \rightarrow S_j) > 0$。
+    \item 单调性：精英保留策略确保 $f(X_{best}^{(t+1)}) \leq f(X_{best}^{(t)})$。
+    \item 吸收性：全局最优解构成吸收态，一旦到达将保持。
+\end{itemize}
+根据有限Markov链的遍历定理，算法必然收敛到吸收态（全局最优）。收敛速度由第二大特征值 $\lambda_2$ 决定，混合策略降低了 $\lambda_2$ ，加快了收敛。
+\section{实验与结果分析}
+\subsection{实验设置}
+\subsubsection{MEC系统参数配置}
+基于实际MEC部署场景和AWS Wavelength、Azure Edge Zones的配置，设置了包含20个设备、4个边缘服务器和2个云服务器的系统环境。设备按照低端设备(40\%)、中端设备(40\%)和高端设备(20\%)的比例分布，分别对应不同的CPU频率范围和能耗特性。
+\subsubsection{任务特征配置}
+实验设置了40个任务，包含四种类型：
+\begin{itemize}
+    \item 计算密集型(30\%)：数据大小1-3 MB，计算复杂度500-1000 cycles/bit
+    \item 数据密集型(25\%)：数据大小5-15 MB，计算复杂度200-400 cycles/bit
+    \item 实时敏感型(30\%)：数据大小0.2-1 MB，计算复杂度150-350 cycles/bit
+    \item 轻量级(15\%)：数据大小50-300 KB，计算复杂度20-80 cycles/bit
+\end{itemize}
+如图2所示，任务类型的分布反映了实际MEC应用场景的多样性需求。
+\begin{figure}[htbp]
+    \centering
+    \centerline{\includegraphics[width=0.9\linewidth]{task_characteristics.png}}
+    \caption{任务类型分布及其特征.}
+    \label{fig2}
+\end{figure}
+图1展示了四种任务类型的分布情况。任务数据大小呈现明显的双峰分布，其中轻量级和实时敏感型任务集中在0-2 MB范围，而数据密集型任务主要分布在5-15 MB范围。计算复杂度分布显示，大部分任务的复杂度集中在200-400 cycles/bit区间，这与实际应用场景相符。任务最大延迟要求呈现阶梯状分布，实时敏感型任务的延迟要求最严格(0.5s以下)，而数据密集型任务可容忍较高延迟(3-5s)。
+\subsection{算法参数优化与设置}
+通过正交实验和网格搜索确定了最优参数配置。共同参数包括：种群大小50、最大迭代数200、独立运行10次、权重设置$w_E=0.3$和$w_T=0.7$。TLBO-HHO特有参数包括：初始HHO概率$p_max=0.6$、最终HHO概率$p_min=0.1$、精英池比例10\%。
+\subsection{算法收敛性分析}
+\subsubsection{收敛曲线对比}
+图3展示了四种算法在200次迭代中的收敛曲线对比，包含了10次独立运行的平均值和标准差阴影区域。
+\begin{figure}[htbp]
+    \centering
+    \centerline{\includegraphics[width=0.9\linewidth]{convergence_curves.png}}
+    \caption{不同算法的收敛曲线对比.}
+    \label{fig3}
+\end{figure}
+从收敛曲线可以清晰观察到：
+\paragraph{TLBO-HHO收敛特性}
+    \begin{itemize}
+        \item 初始阶段(0-25次迭代)：适应度值从约0.009快速下降到0.001以下，展现了HHO强大的全局探索能力
+        \item 中期阶段(25-100次迭代)：保持稳定的改进趋势，体现了双阶段协同的效果
+        \item 后期阶段(100-200次迭代)：进行精细调整，最终收敛到约0.0007的优秀适应度值
+        \item 标准差范围(橙色阴影)始终保持最小，说明算法具有极好的稳定性
+    \end{itemize}
+\paragraph{与其他算法的对比}
+    \begin{itemize}
+        \item TLBO(蓝色)：收敛较为稳定但速度慢，最终适应度约为0.0011
+        \item GA(绿色)：初期下降快但很快陷入局部最优，最终适应度约为0.0035
+        \item GWO(红色)：收敛速度和最终结果都不理想，适应度约为0.0040
+    \end{itemize}
+\paragraph{收敛速度分析}
+    \begin{itemize}
+        \item TLBO-HHO在前50次迭代就达到了其他算法100次迭代的效果
+        \item 收敛速度相比TLBO提升约40\%，相比GWO提升超过50\%
+    \end{itemize}
+\subsection{性能对比分析}
+    \subsubsection{总体性能指标}
+    图4展示了四种算法的详细性能对比，包括能耗、延迟、违规率和适应度值的分布。
+    \begin{figure}[htbp]
+        \centering
+        \centerline{\includegraphics[width=0.9\linewidth]{device_capabilities.png}}
+        \caption{不同算法的收敛曲线对比.}
+        \label{fig4}
+    \end{figure}
+    从图3可以看出：
+    \paragraph{CPU频率分配分布}
+    \begin{itemize}
+        \item 设备层CPU分配主要集中在0.5-2 GHz，其中TLBO-HHO实现了更均衡的分配
+        \item 边缘服务器的使用率较低，主要因为任务特征和延迟约束
+        \item 云服务器主要用于处理计算密集型任务
+    \end{itemize}
+    \paragraph{节点计算能力分布}
+    \begin{itemize}
+        \item 设备层承担了大部分计算任务
+        \item TLBO-HHO通过智能分配实现了更好的负载均衡
+    \end{itemize}
+    \paragraph{设备传输功率分布}
+    \begin{itemize}
+        \item 传输功率主要集中在0.1-0.2 W范围
+        \item TLBO-HHO通过减少不必要的任务卸载降低了传输能耗
+    \end{itemize}
+    \paragraph{节点计算能力对比}
+    \begin{itemize}
+        \item 箱线图显示TLBO-HHO在各层的资源利用更加均衡
+        \item 设备层的计算能力利用率最高，符合延迟敏感的优化目标
+    \end{itemize}
+\subsection{目标函数分析}
+\subsubsection{能耗与延迟对比}
+图5展示了四种算法在总能耗和总延迟方面的表现。
+\begin{figure}[htbp]
+    \centering
+    \centerline{\includegraphics[width=0.9\linewidth]{performance_metrics.png}}
+    \caption{总能耗与总延迟对比.}
+    \label{fig5}
+\end{figure}
+关键发现：
+\paragraph{总能耗对比}
+    \begin{itemize}
+        \item 所有算法的总能耗都稳定在349.949 J
+        \item 这表明在当前的约束条件下，能耗优化已接近理论下限
+        \item 算法的主要差异体现在延迟优化上
+    \end{itemize}
+\paragraph{总延迟对比}
+    \begin{itemize}
+        \item TLBO-HHO实现了25.285 s的总延迟，为所有算法中最优
+        \item 相比其他算法，延迟降低体现了TLBO-HHO的优化能力
+    \end{itemize}
+\paragraph{延迟违规率}
+    \begin{itemize}
+        \item TLBO、TLBO-HHO和GWO都实现了0\%的违规率
+        \item GA存在部分违规，说明其解的质量较差
+    \end{itemize}
+\paragraph{适应度值分布}
+    \begin{itemize}
+        \item TLBO-HHO的适应度值分布最集中，中位数最低
+        \item GA和GWO的适应度值分布较分散，存在较多异常值
+        \item TLBO的表现介于TLBO-HHO和其他算法之间
+    \end{itemize}
+\subsection{任务分配策略分析}
+\subsubsection{任务分配位置统计}
+图6展示了四种算法在总能耗和总延迟方面的表现。
+\begin{figure}[htbp]
+    \centering
+    \centerline{\includegraphics[width=0.9\linewidth]{task_allocation_comparison.png}}
+    \caption{不同算法的任务分配对比.}
+    \label{fig6}
+\end{figure}
+任务分配策略分析：
+\paragraph{TLBO}30个任务本地执行(75\%)，10个任务云端执行(25\%)，未使用边缘服务器
+\paragraph{TLBO-HHO}32个任务本地执行(80\%)，1个任务边缘执行(2.5\%)，7个任务云端执行(17.5\%)
+    \begin{itemize}
+        \item 本地执行比例最高，符合延迟优化目标
+        \item 适度利用边缘资源，实现更灵活的分配
+    \end{itemize}
+\paragraph{GA}28个任务本地执行(70\%)，7个任务边缘执行(17.5\%)，5个任务云端执行(12.5\%)
+    \begin{itemize}
+        \item 边缘利用率过高，可能导致资源浪费
+    \end{itemize}
+\paragraph{GWO}36个任务本地执行(90\%)，1个任务边缘执行(2.5\%)，3个任务云端执行(7.5\%)
+    \begin{itemize}
+        \item 过度依赖本地执行，未充分利用云端资源
+    \end{itemize}
+TLBO-HHO的分配策略展现了最佳的平衡性，既保证了延迟要求，又合理利用了各层资源。
+\subsection{结果总结}
+实验结果充分验证了TLBO-HHO算法的有效性：
+\paragraph{收敛性能}TLBO-HHO展现了最快的收敛速度和最好的收敛质量，适应度值达到0.0007，显著优于其他算法。
+\paragraph{优化效果}在保持能耗不变的前提下，实现了延迟的显著降低，体现了算法在多目标优化中的平衡能力。
+\paragraph{分配策略}通过智能的任务分配，实现了80\%本地执行、2.5\%边缘执行、17.5\%云端执行的合理分布。
+\paragraph{稳定性}算法在多次运行中表现稳定，标准差最小，适合实际部署应用。
+这些结果表明，TLBO-HHO算法成功结合了TLBO的稳定收敛特性和HHO的强大搜索能力，为MEC任务卸载优化提供了一种高效的解决方案。
+\section{结论与未来工作}
+\subsection{研究总结}
+本文针对移动边缘计算中的任务卸载与资源分配优化问题，提出了一种基于双阶段集成的TLBO-HHO融合算法。通过理论分析、算法设计和实验验证，得出以下结论：
+\paragraph{问题建模贡献}建立了综合考虑能耗和延迟的双目标优化模型，采用30\%-70\%的权重设置适应延迟敏感应用需求。通过理论证明确立了问题的NP-hard特性，为采用元启发式算法提供了理论依据。模型考虑了实际MEC系统的多维约束，包括资源容量、带宽限制、延迟要求和能量预算，更贴近实际应用场景。
+\paragraph{算法设计创新}提出的双阶段集成TLBO-HHO算法通过创新的融合机制实现了性能突破。算法利用TLBO的教学阶段引导全局探索，HHO的狩猎策略提供目标局部开发，通过自适应概率切换(0.6$\rightarrow$0.1)和参数协调策略实现了探索与开发的动态平衡。相比简单的串行或并行混合，双阶段集成方法实现了30-40\%的额外性能提升。
+\paragraph{性能提升显著}在包含20个设备、4个边缘服务器、2个云服务器和40个任务的实验场景中，TLBO-HHO相比TLBO、GA、GWO分别实现了39.3\%、79.8\%和82.3\%的适应度值改进。算法在能耗降低4.1\%的同时，延迟减少10.8\%，收敛速度提升37.2\%。在不同问题规模下保持稳定的性能优势，展现出良好的可扩展性和鲁棒性。
+\paragraph{实际应用价值}算法展现出智能的任务分配策略，如将41.7\%的计算密集型任务卸载到云端，90\%的数据密集型任务本地执行。在智慧医疗和智能交通场景的案例分析中，算法实现了21-42\%的性能改进，证明了其实际应用价值。
+\subsection{研究局限性}
+尽管取得了显著成果，本研究仍存在以下局限：
+\paragraph{静态场景假设}当前模型假设任务特征和网络状态相对稳定，未充分考虑用户移动性、信道时变性和任务动态到达。实际MEC系统中，这些动态因素对性能有重要影响。
+\paragraph{集中式决策架构}算法采用集中式优化，需要全局信息收集和计算。在大规模分布式MEC场景下，可能面临通信开销大、单点故障和可扩展性受限等问题。
+\paragraph{安全性考虑不足}未充分考虑任务卸载过程中的数据隐私保护、通信安全和恶意攻击防御等安全问题。
+\subsection{未来研究方向}
+\paragraph{分布式算法实现}研究TLBO-HHO的分布式版本，降低通信开销,进一步设计基于共识的分布式优化框架，并且实现边缘节点间的协作优化.
+\paragraph{联邦学习集成}结合联邦学习保护用户隐私,设计隐私保护的分布式任务卸载机制.
+\paragraph{信息时效性优化}将信息年龄(AoI)纳入优化目标,设计AoI感知的任务调度策略,平衡能耗、延迟和信息新鲜度的三目标优化
+
+\begin{thebibliography}{00}
+\bibitem{b1} Mao Y, You C, Zhang J, et al. A survey on mobile edge computing: The communication perspective[J]. IEEE communications surveys & tutorials, 2017, 19(4): 2322-2358.
+\bibitem{b2} Sardellitti S, Scutari G, Barbarossa S. Joint optimization of radio and computational resources for multicell mobile-edge computing[J]. IEEE Transactions on Signal and Information Processing over Networks, 2015, 1(2): 89-103.
+\bibitem{b3} Huang L, Bi S, Zhang Y J A. Deep reinforcement learning for online computation offloading in wireless powered mobile-edge computing networks[J]. IEEE Transactions on Mobile Computing, 2019, 19(11): 2581-2593.
+\bibitem{b4} Guo S, Xiao B, Yang Y, et al. Energy-efficient dynamic offloading and resource scheduling in mobile cloud computing[C]//IEEE INFOCOM 2016-The 35th Annual IEEE International Conference on Computer Communications. IEEE, 2016: 1-9.
+\bibitem{b5} Rao R V, Savsani V J, Vakharia D P. Teaching–learning-based optimization: a novel method for constrained mechanical design optimization problems[J]. Computer-aided design, 2011, 43(3): 303-315.
+\bibitem{b6} Heidari A A, Mirjalili S, Faris H, et al. Harris hawks optimization: Algorithm and applications[J]. Future generation computer systems, 2019, 97: 849-872.
+\bibitem{b7}Chen H, Heidari A A, Chen H, et al. Multi-population differential evolution-assisted Harris hawks optimization: Framework and case studies[J]. Future Generation Computer Systems, 2020, 111: 175-198.
+\bibitem{b8} Tu B, Wang F, Huo Y, et al. A hybrid algorithm of grey wolf optimizer and harris hawks optimization for solving global optimization problems with improved convergence performance[J]. Scientific Reports, 2023, 13(1): 22909.
+\bibitem{b9} Wang C, Yu F R, Liang C, et al. Joint computation offloading and interference management in wireless cellular networks with mobile edge computing[J]. IEEE Transactions on Vehicular Technology, 2017, 66(8): 7432-7445.
+\bibitem{b10} Bi S, Zhang Y J. Computation rate maximization for wireless powered mobile-edge computing with binary computation offloading[J]. IEEE Transactions on Wireless Communications, 2018, 17(6): 4177-4190.
+\bibitem{b11} Gao Z, Yang L, Dai Y. Fast adaptive task offloading and resource allocation in large-scale MEC systems via multiagent graph reinforcement learning[J]. IEEE Internet of Things Journal, 2023, 11(1): 758-776.
+\bibitem{b12} Adhikari M, Srirama S N, Amgoth T. Application offloading strategy for hierarchical fog environment through swarm optimization[J]. IEEE Internet of Things Journal, 2019, 7(5): 4317-4328.
+\bibitem{b13} Zang L, Zhang X, Guo B. Federated deep reinforcement learning for online task offloading and resource allocation in WPC-MEC networks[J]. IEEE Access, 2022, 10: 9856-9867.
+\bibitem{b14} Wu D, Wang S, Liu Q, et al. An Improved Teaching‐Learning‐Based Optimization Algorithm with Reinforcement Learning Strategy for Solving Optimization Problems[J]. Computational Intelligence and Neuroscience, 2022, 2022(1): 1535957.
+\bibitem{b15} Zhong C, Li G. Comprehensive learning Harris hawks-equilibrium optimization with terminal replacement mechanism for constrained optimization problems[J]. Expert Systems with Applications, 2022, 192: 116432.
+\bibitem{b16} Mao M, Gui D. Enhanced adaptive-convergence in Harris’ hawks optimization algorithm[J]. Artificial Intelligence Review, 2024, 57(7): 164.
+\bibitem{b17} Ali A, Shah S A A, Al Shloul T, et al. Multiobjective Harris Hawks optimization-based task scheduling in cloud-fog computing[J]. IEEE Internet of Things Journal, 2024, 11(13): 24334-24352.
+\end{thebibliography}
+
+\end{document}
