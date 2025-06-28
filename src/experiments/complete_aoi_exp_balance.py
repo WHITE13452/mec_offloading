@@ -1,4 +1,4 @@
-# src/experiments/complete_aoi_experiment.py
+# src/experiments/complete_aoi_exp_balance.py
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -289,8 +289,8 @@ def run_algorithm_comparison_balanced(system, max_iter=150, population_size=50, 
     energy_model = EnergyModel(system)
     aoi_model = AoIModel(system, delay_model)
     
-    # 使用平衡权重
-    w_energy, w_delay, w_aoi = 0.33, 0.33, 0.34
+    # 针对AoI优化的权重
+    w_energy, w_delay, w_aoi = 0.25, 0.35, 0.40
     
     # 初始化算法
     algorithms = {
@@ -303,7 +303,8 @@ def run_algorithm_comparison_balanced(system, max_iter=150, population_size=50, 
             system, delay_model, energy_model, aoi_model,
             max_iter=max_iter, population_size=population_size,
             w_energy=w_energy, w_delay=w_delay, w_aoi=w_aoi, 
-            hho_prob=0.3, verbose=False
+            hho_prob=0.7,  # 增加HHO使用概率
+            verbose=False
         ),
         'GA': GA(
             system, delay_model, energy_model, aoi_model,
@@ -986,11 +987,11 @@ def plot_task_allocation_comparison(results, system, save_dir):
     # plt.savefig(os.path.join(save_dir, 'balanced_radar_comparison.png'), dpi=300, bbox_inches='tight')
     # plt.close()
     
-    print(f"\n图表已保存到 {save_dir} 目录：")
-    print("  - balanced_convergence.png")
-    print("  - balanced_metrics_comparison.png")
-    print("  - balanced_distribution_comparison.png")
-    print("  - balanced_radar_comparison.png")
+    # print(f"\n图表已保存到 {save_dir} 目录：")
+    # print("  - balanced_convergence.png")
+    # print("  - balanced_metrics_comparison.png")
+    # print("  - balanced_distribution_comparison.png")
+    # print("  - balanced_radar_comparison.png")
 
 
 def run_complete_aoi_experiment():
