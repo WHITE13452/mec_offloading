@@ -33,12 +33,22 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
 # 全局变量控制是否使用英文标签
 USE_ENGLISH_LABELS = True
 
-# 设置全局字体大小（比文章10号字体小半号，约9.5号）
-FONT_SIZE_TITLE = 13  # 标题字体
-FONT_SIZE_LABEL = 11  # 轴标签字体
-FONT_SIZE_TICK = 10   # 刻度字体
-FONT_SIZE_LEGEND = 10 # 图例字体
-FONT_SIZE_TEXT = 10   # 文本标注字体
+# 设置全局字体和字号 - 增大字号以匹配文档样式
+FONT_SIZE_TITLE = 22    # 标题字体 (增大)
+FONT_SIZE_LABEL = 20    # 轴标签字体 (增大)
+FONT_SIZE_TICK = 18     # 刻度字体 (增大)
+FONT_SIZE_LEGEND = 18   # 图例字体 (增大)
+FONT_SIZE_TEXT = 18     # 文本标注字体 (增大)
+
+COLORS = [
+    (136/255, 179/255, 214/255),   # 浅蓝色 R:100, G:143, B:255
+    (252/255, 163/255, 17/255),   # 浅黄色 R:255, G:213, B:128
+    (228/255, 144/255, 117/255),   # 粉蓝色 R:176, G:224, B:230
+    (169/255, 84/255, 59/255),   # 浅黄色 R:255, G:213, B:128
+]
+
+# 不同的填充样式，适合黑白打印
+HATCHES = ['/', '\\', 'x', '+', 'o', 'O', '.', '*']
 
 # 标签字典
 LABELS = {
@@ -579,8 +589,25 @@ def plot_balanced_results(results, system, save_dir='results/aoi/'):
     print("  - task_allocation_comparison.png")
 
 
+# 设置全局字体为Times New Roman
+def setup_plot_style():
+    """设置绘图样式为Times New Roman字体"""
+    plt.rcParams['font.family'] = 'Times New Roman'
+    plt.rcParams['mathtext.fontset'] = 'cm'  # 使用Computer Modern字体作为数学公式字体
+    plt.rcParams['axes.titlesize'] = FONT_SIZE_TITLE
+    plt.rcParams['axes.labelsize'] = FONT_SIZE_LABEL
+    plt.rcParams['xtick.labelsize'] = FONT_SIZE_TICK
+    plt.rcParams['ytick.labelsize'] = FONT_SIZE_TICK
+    plt.rcParams['legend.fontsize'] = FONT_SIZE_LEGEND
+    plt.rcParams['figure.titlesize'] = FONT_SIZE_TITLE
+    plt.rcParams['figure.dpi'] = 300
+
+
+
 def plot_task_type_distribution(system, save_dir):
-    """绘制任务类型分布（单独的饼图）"""
+    """绘制任务类型分布（饼图）- 适合黑白打印"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
     # 统计任务类型
     task_types = {}
     for task in system.tasks:
@@ -604,16 +631,34 @@ def plot_task_type_distribution(system, save_dir):
     
     # 创建图表
     fig, ax = plt.subplots(figsize=(8, 6))
-    colors_pie = ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99']
     
-    wedges, texts, autotexts = ax.pie(counts, labels=english_labels, colors=colors_pie, 
-                                       autopct='%1.1f%%', startangle=90, textprops={'fontsize': FONT_SIZE_TEXT})
+    # 使用自定义颜色和添加纹理
+    wedges, texts, autotexts = ax.pie(
+        counts, 
+        labels=None,  # 移除标签，稍后添加图例
+        colors=[COLORS[i % len(COLORS)] for i in range(len(counts))],
+        autopct='%1.1f%%', 
+        startangle=90, 
+        textprops={'fontsize': FONT_SIZE_TEXT, 'fontname': 'Times New Roman', 'color': 'black'}
+    )
     
-    # 设置标签字体大小
-    for text in texts:
-        text.set_fontsize(FONT_SIZE_LABEL)
+    # 添加纹理填充
+    for i, wedge in enumerate(wedges):
+        wedge.set_hatch(HATCHES[i % len(HATCHES)])
+        wedge.set_edgecolor('black')
     
-    ax.set_title(get_label('task_type_dist'), fontsize=FONT_SIZE_TITLE, fontweight='bold')
+    # 添加图例（替代直接标签）
+    ax.legend(
+        wedges, 
+        english_labels, 
+        title="Task Types", 
+        title_fontsize=FONT_SIZE_LEGEND,
+        loc="center left", 
+        bbox_to_anchor=(1, 0, 0.5, 1),
+        fontsize=FONT_SIZE_LEGEND
+    )
+    
+    ax.set_title(get_label('task_type_dist'), fontsize=FONT_SIZE_TITLE, fontname='Times New Roman', fontweight='bold')
     
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'task_type_distribution.png'), dpi=300, bbox_inches='tight')
@@ -621,7 +666,9 @@ def plot_task_type_distribution(system, save_dir):
 
 
 def plot_update_interval_distribution(system, save_dir):
-    """绘制更新间隔分布（单独的箱线图）"""
+    """绘制更新间隔分布（箱线图）- 适合黑白打印"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
     # 统计任务类型的更新间隔
     task_types = {}
     for task in system.tasks:
@@ -647,12 +694,33 @@ def plot_update_interval_distribution(system, save_dir):
     
     # 创建图表
     fig, ax = plt.subplots(figsize=(8, 6))
-    colors_box = ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99']
     
+    # 绘制箱线图并添加纹理
     bp = ax.boxplot(update_interval_data, labels=english_labels, patch_artist=True)
-    for patch, color in zip(bp['boxes'], colors_box):
-        patch.set_facecolor(color)
+    
+    # 自定义箱体和纹理
+    for i, patch in enumerate(bp['boxes']):
+        patch.set_facecolor(COLORS[i % len(COLORS)])
         patch.set_alpha(0.7)
+        patch.set_hatch(HATCHES[i % len(HATCHES)])
+        patch.set_edgecolor('black')
+    
+    # 设置线条为黑色
+    for whisker in bp['whiskers']:
+        whisker.set_color('black')
+        whisker.set_linewidth(1.5)
+    
+    for cap in bp['caps']:
+        cap.set_color('black')
+        cap.set_linewidth(1.5)
+        
+    for median in bp['medians']:
+        median.set_color('black')
+        median.set_linewidth(2)
+        
+    for flier in bp['fliers']:
+        flier.set_markeredgecolor('black')
+        flier.set_markerfacecolor('white')
     
     ax.set_ylabel(get_label('update_interval'), fontsize=FONT_SIZE_LABEL)
     ax.set_title(get_label('update_interval_dist'), fontsize=FONT_SIZE_TITLE, fontweight='bold')
@@ -665,23 +733,35 @@ def plot_update_interval_distribution(system, save_dir):
 
 
 def plot_convergence_comparison(results, save_dir):
-    """绘制算法收敛曲线对比"""
+    """绘制算法收敛曲线对比 - 适合黑白打印"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
     plt.figure(figsize=(10, 6))
     
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    # 自定义线型和标记，提高黑白打印可区分性
     linestyles = ['-', '--', '-.', ':']
+    markers = ['o', 's', '^', 'D']
     
     for idx, (algo_name, data) in enumerate(results.items()):
         avg_history = data['avg_fitness_history']
         std_history = data['std_fitness_history']
         
         x = np.arange(len(avg_history))
-        color = colors[idx % len(colors)]
+        color = COLORS[idx % len(COLORS)]
         
-        plt.plot(x, avg_history, label=algo_name, color=color, 
-                linewidth=2.5, linestyle=linestyles[idx % len(linestyles)])
+        # 使用标记点增强黑白打印识别度，但不是每个点都标记
+        mark_every = max(1, len(x) // 15)  # 每15个点标记一次
+        
+        plt.plot(x, avg_history, 
+                 label=algo_name, 
+                 color=color,
+                 linestyle=linestyles[idx % len(linestyles)],
+                 marker=markers[idx % len(markers)],
+                 markevery=mark_every,
+                 linewidth=2.5)
+                 
         plt.fill_between(x, avg_history - std_history, avg_history + std_history, 
-                        alpha=0.15, color=color)
+                       alpha=0.15, color=color, hatch=HATCHES[idx % len(HATCHES)])
     
     plt.xlabel(get_label('iterations'), fontsize=FONT_SIZE_LABEL)
     plt.ylabel(get_label('fitness'), fontsize=FONT_SIZE_LABEL)
@@ -699,13 +779,19 @@ def plot_convergence_comparison(results, save_dir):
     start_idx = max(0, len(x) - 50)
     for idx, (algo_name, data) in enumerate(results.items()):
         avg_history = data['avg_fitness_history']
-        color = colors[idx % len(colors)]
-        axins.plot(x[start_idx:], avg_history[start_idx:], color=color, 
-                  linewidth=2, linestyle=linestyles[idx % len(linestyles)])
+        color = COLORS[idx % len(COLORS)]
+        
+        # 在放大图中也使用标记
+        axins.plot(x[start_idx:], avg_history[start_idx:], 
+                   color=color, 
+                   linestyle=linestyles[idx % len(linestyles)],
+                   marker=markers[idx % len(markers)],
+                   markevery=max(1, len(x[start_idx:]) // 5),
+                   linewidth=1.5)
     
     axins.grid(True, alpha=0.3)
     axins.set_xlim(x[start_idx], x[-1])
-    axins.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK-1)
+    axins.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK-2)
     
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'convergence_comparison.png'), dpi=300, bbox_inches='tight')
@@ -713,19 +799,28 @@ def plot_convergence_comparison(results, save_dir):
 
 
 def plot_fitness_comparison(results, save_dir):
-    """绘制平均适应度对比（带误差条的柱状图）"""
+    """绘制平均适应度对比（带误差条的柱状图）- 适合黑白打印"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
     # 准备数据
     algorithms = list(results.keys())
     fitness_values = [results[alg]['mean_fitness'] for alg in algorithms]
     fitness_stds = [results[alg]['std_fitness'] for alg in algorithms]
     
     # 创建图表
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(8, 7))
     x = np.arange(len(algorithms))
     width = 0.6
     
+    # 创建带纹理的柱状图
     bars = ax.bar(x, fitness_values, width, yerr=fitness_stds, 
-                   capsize=5, color='skyblue', alpha=0.8)
+                 capsize=5, edgecolor='black', linewidth=1.5)
+    
+    # 为每个柱子添加不同填充样式
+    for i, bar in enumerate(bars):
+        bar.set_facecolor(COLORS[i % len(COLORS)])
+        bar.set_hatch(HATCHES[i % len(HATCHES)])
+        bar.set_alpha(0.8)
     
     ax.set_xlabel(get_label('algorithm'), fontsize=FONT_SIZE_LABEL)
     ax.set_ylabel(get_label('avg_fitness'), fontsize=FONT_SIZE_LABEL)
@@ -734,10 +829,14 @@ def plot_fitness_comparison(results, save_dir):
     ax.set_xticklabels(algorithms, fontsize=FONT_SIZE_TICK)
     ax.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
     
+    # 手动设置y轴范围，确保有足够空间显示数值标签和标题
+    max_val = max([(val + std) for val, std in zip(fitness_values, fitness_stds)])
+    ax.set_ylim(0, max_val * 1.4)  # 将上限增加到最大值的1.4倍
+    
     # 添加数值标签
     for i, (bar, val, std) in enumerate(zip(bars, fitness_values, fitness_stds)):
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + std + 0.0001,
-                f'{val:.4f}', ha='center', va='bottom', fontsize=FONT_SIZE_TEXT)
+                f'{val:.4f}', ha='center', va='bottom', fontsize=FONT_SIZE_TEXT, fontweight='bold')
     
     plt.grid(True, alpha=0.3, axis='y')
     plt.tight_layout()
@@ -746,7 +845,9 @@ def plot_fitness_comparison(results, save_dir):
 
 
 def plot_performance_boxplots(results, system, save_dir):
-    """绘制性能指标对比（能耗、延迟、AoI的箱线图）"""
+    """绘制性能指标对比（能耗、延迟、AoI的箱线图）- 适合黑白打印"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
     algorithms = list(results.keys())
     
     # 收集每次运行的详细数据
@@ -771,18 +872,33 @@ def plot_performance_boxplots(results, system, save_dir):
         fig, ax = plt.subplots(figsize=(8, 6))
         
         bp = ax.boxplot(data, labels=algorithms, patch_artist=True)
-        for patch, color in zip(bp['boxes'], colors):
-            patch.set_facecolor(color)
+        
+        # 添加不同的填充样式以便黑白打印识别
+        for i, patch in enumerate(bp['boxes']):
+            patch.set_facecolor(COLORS[i % len(COLORS)])
             patch.set_alpha(0.7)
+            patch.set_hatch(HATCHES[i % len(HATCHES)])
+            patch.set_edgecolor('black')
+            
+        # 设置其他元素为黑色
+        for element in ['whiskers', 'caps', 'medians']:
+            for item in bp[element]:
+                item.set_color('black')
+                item.set_linewidth(1.5 if element == 'medians' else 1)
+                
+        for flier in bp['fliers']:
+            flier.set_markeredgecolor('black')
+            flier.set_markerfacecolor('white')
         
         ax.set_ylabel(ylabel, fontsize=FONT_SIZE_LABEL)
         ax.set_title(title, fontsize=FONT_SIZE_TITLE, fontweight='bold')
         ax.grid(True, alpha=0.3, axis='y')
         ax.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK)
         
-        # 添加平均值标记
+        # 添加平均值标记 - 使用红色五角星
         for i, d in enumerate(data):
-            ax.plot(i+1, np.mean(d), 'r*', markersize=10)
+            ax.plot(i+1, np.mean(d), marker='*', markersize=14, 
+                    markeredgecolor='black', markerfacecolor='red')
         
         plt.tight_layout()
         plt.savefig(os.path.join(save_dir, filename), dpi=300, bbox_inches='tight')
@@ -790,6 +906,86 @@ def plot_performance_boxplots(results, system, save_dir):
 
 
 def plot_task_allocation_simple(results, system, save_dir):
+    """绘制任务分配对比图（堆叠柱状图）- 适合黑白打印"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
+    algorithms = list(results.keys())
+    allocations = []
+    
+    # 使用最优解进行任务分配分析
+    for algo_name in algorithms:
+        best_idx = np.argmin(results[algo_name]['best_fitness_values'])
+        best_solution = results[algo_name]['best_solutions'][best_idx]
+        
+        system.apply_solution(best_solution)
+        
+        allocation = {'device': 0, 'edge': 0, 'cloud': 0}
+        for task in system.tasks:
+            if task.execution_location == 'device':
+                allocation['device'] += 1
+            elif task.execution_location == 'edge':
+                allocation['edge'] += 1
+            elif task.execution_location == 'cloud':
+                allocation['cloud'] += 1
+        
+        allocations.append(allocation)
+    
+    # 创建图表
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    x = np.arange(len(algorithms))
+    width = 0.6
+    
+    # 堆积柱状图数据
+    device_counts = [alloc['device'] for alloc in allocations]
+    edge_counts = [alloc['edge'] for alloc in allocations]
+    cloud_counts = [alloc['cloud'] for alloc in allocations]
+    
+    # 使用不同颜色和纹理的柱状图
+    p1 = ax.bar(x, device_counts, width, 
+               label=get_label('device'), 
+               color=COLORS[0], 
+               edgecolor='black',
+               hatch=HATCHES[0])
+               
+    p2 = ax.bar(x, edge_counts, width, 
+               bottom=device_counts, 
+               label=get_label('edge'), 
+               color=COLORS[1],
+               edgecolor='black', 
+               hatch=HATCHES[1])
+               
+    p3 = ax.bar(x, cloud_counts, width, 
+               bottom=np.array(device_counts) + np.array(edge_counts), 
+               label=get_label('cloud'), 
+               color=COLORS[2],
+               edgecolor='black',
+               hatch=HATCHES[2])
+    
+    ax.set_xlabel(get_label('algorithm'), fontsize=FONT_SIZE_LABEL)
+    ax.set_ylabel(get_label('num_tasks'), fontsize=FONT_SIZE_LABEL)
+    ax.set_title(get_label('task_allocation'), fontsize=FONT_SIZE_TITLE, fontweight='bold')
+    ax.set_xticks(x)
+    ax.set_xticklabels(algorithms, fontsize=FONT_SIZE_TICK)
+    ax.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
+    ax.legend(loc='upper right', fontsize=FONT_SIZE_LEGEND)
+    
+    # 添加数值标签（加粗以增强黑白打印效果）
+    for i, (device, edge, cloud) in enumerate(zip(device_counts, edge_counts, cloud_counts)):
+        if device > 0:
+            ax.text(i, device/2, str(device), ha='center', va='center', 
+                   fontweight='bold', fontsize=FONT_SIZE_TEXT)
+        if edge > 0:
+            ax.text(i, device + edge/2, str(edge), ha='center', va='center', 
+                   fontweight='bold', fontsize=FONT_SIZE_TEXT)
+        if cloud > 0:
+            ax.text(i, device + edge + cloud/2, str(cloud), ha='center', va='center', 
+                   fontweight='bold', fontsize=FONT_SIZE_TEXT)
+    
+    plt.grid(True, alpha=0.3, axis='y')
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, 'task_allocation_comparison.png'), dpi=300, bbox_inches='tight')
+    plt.close()
     """绘制任务分配对比图（简化版，只保留数值柱状图）"""
     algorithms = list(results.keys())
     allocations = []
