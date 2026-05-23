@@ -1,0 +1,255 @@
+% 第四章 基于RDHO的任务卸载策略 - 公式汇总
+% LaTeX版本
+
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{ctex}
+
+\begin{document}
+
+\title{第四章公式汇总 - LaTeX版本}
+\maketitle
+
+%% ==================== 4.1 系统模型与问题描述 ====================
+
+\section{4.1 系统模型与问题描述}
+
+\subsection{4.1.1 用户体验质量（QoE）模型}
+
+% 公式4-1：时延满足度
+\textbf{公式4-1：时延满足度}
+\begin{equation}
+S_i^{delay} = \frac{1}{1 + e^{\gamma_i \cdot (T_i - T_i^{max})}}
+\end{equation}
+
+% 公式4-2：能耗接受度
+\textbf{公式4-2：能耗接受度}
+\begin{equation}
+S_i^{energy} = \begin{cases}
+1 - \dfrac{E_i}{E_i^{budget}}, & \text{if } B_i \geq 60\% \\[10pt]
+1 - \dfrac{E_i}{E_i^{budget}} \cdot (1 + \eta \cdot (0.6 - B_i)), & \text{if } 30\% \leq B_i < 60\% \\[10pt]
+1 - \dfrac{E_i}{E_i^{budget}} \cdot (1 + 2\eta \cdot (0.3 - B_i)), & \text{if } B_i < 30\%
+\end{cases}
+\end{equation}
+
+% 公式4-3：任务完成率
+\textbf{公式4-3：任务完成率}
+\begin{equation}
+S_i^{completion} = \begin{cases}
+1, & \text{if } T_i \leq T_i^{max} \text{ and } AoI_i \leq AoI_i^{max} \\
+0, & \text{otherwise}
+\end{cases}
+\end{equation}
+
+% 公式4-4：综合QoE评分
+\textbf{公式4-4：综合QoE评分}
+\begin{equation}
+QoE_i = w_1^{qoe} \cdot S_i^{delay} + w_2^{qoe} \cdot S_i^{energy} + w_3^{qoe} \cdot S_i^{completion}
+\end{equation}
+
+% 公式4-5：系统平均QoE
+\textbf{公式4-5：系统平均QoE}
+\begin{equation}
+\overline{QoE} = \frac{1}{K} \sum_{i=1}^{K} QoE_i
+\end{equation}
+
+\subsection{4.1.2 公平性度量与建模}
+
+% 公式4-6：Jain公平性指数
+\textbf{公式4-6：Jain公平性指数}
+\begin{equation}
+Fairness = \frac{\left(\sum_{i=1}^{K} QoE_i\right)^2}{K \cdot \sum_{i=1}^{K} QoE_i^2}
+\end{equation}
+
+\subsection{4.1.3 优化问题建模}
+
+% 公式4-7：目标函数
+\textbf{公式4-7：目标函数}
+\begin{equation}
+\min_{X} F(X) = \sum_{i \in \mathcal{T}} \left( w_E \cdot \frac{E_i}{E^{norm}} + w_T \cdot \frac{T_i}{T^{norm}} + w_{AoI} \cdot \frac{\overline{AoI}}{AoI^{norm}} - w_{QoE} \cdot QoE_i - w_F \cdot Fairness \right)
+\end{equation}
+
+% 公式4-8：任务分配唯一性约束
+\textbf{公式4-8：任务分配唯一性约束}
+\begin{equation}
+x_i^{local} + x_i^{edge} + x_i^{cloud} = 1, \quad \forall i \in \mathcal{T}
+\end{equation}
+
+% 公式4-9：资源容量约束
+\textbf{公式4-9：资源容量约束}
+\begin{equation}
+\sum_{i \in \mathcal{T}} x_i \cdot f_{i,j} \leq F_j^{max}, \quad \forall j \in \mathcal{E} \cup \mathcal{C}
+\end{equation}
+
+% 公式4-10：时延约束
+\textbf{公式4-10：时延约束}
+\begin{equation}
+T_i \leq T_i^{max}, \quad \forall i \in \mathcal{T}
+\end{equation}
+
+% 公式4-11：AoI约束
+\textbf{公式4-11：AoI约束}
+\begin{equation}
+AoI_i \leq AoI_i^{max}, \quad \forall i \in \mathcal{T}
+\end{equation}
+
+% 公式4-12：服务质量约束
+\textbf{公式4-12：服务质量约束}
+\begin{equation}
+\frac{1}{K} \sum_{i=1}^{K} \mathbb{I}(T_i \leq T_i^{max}) \geq 0.95
+\end{equation}
+
+% 公式4-13：频率范围约束
+\textbf{公式4-13：频率范围约束}
+\begin{equation}
+f_j^{min} \leq f_{i,j} \leq f_j^{max}, \quad \forall i \in \mathcal{T}, j \in \mathcal{D} \cup \mathcal{E} \cup \mathcal{C}
+\end{equation}
+
+% 公式4-14：QoE约束
+\textbf{公式4-14：QoE约束}
+\begin{equation}
+QoE_i \geq QoE_{min}, \quad \forall i \in \mathcal{T}
+\end{equation}
+
+% 公式4-15：公平性约束
+\textbf{公式4-15：公平性约束}
+\begin{equation}
+Fairness \geq 0.8
+\end{equation}
+
+%% ==================== 4.2 RDHO混合元启发式算法设计 ====================
+
+\section{4.2 RDHO混合元启发式算法设计}
+
+\subsection{4.2.2 霜冰优化算法（RIME）简介}
+
+% 公式4-16：软凝华搜索
+\textbf{公式4-16：软凝华搜索}
+\begin{equation}
+X_{new} = X_{best} + \beta \cdot \cos(\theta) \cdot h \cdot (ub - lb)
+\end{equation}
+
+% 公式4-17：自适应搜索半径
+\textbf{公式4-17：自适应搜索半径}
+\begin{equation}
+h = 2 \left(1 - \frac{t}{T_{max}}\right)
+\end{equation}
+
+% 公式4-18：硬凝华穿刺
+\textbf{公式4-18：硬凝华穿刺}
+\begin{equation}
+X_{new}[j_{rand}] = X_{best}[j_{rand}]
+\end{equation}
+
+% 公式4-19：穿刺概率
+\textbf{公式4-19：穿刺概率}
+\begin{equation}
+E = 2 \cdot \exp\left(-\left(\frac{4t}{T_{max}}\right)^2\right)
+\end{equation}
+
+\subsection{4.2.3 蜣螂优化算法（DBO）简介}
+
+% 公式4-20：滚球行为
+\textbf{公式4-20：滚球行为}
+\begin{equation}
+X_{new} = X + \alpha \cdot k \cdot (X - lb) + b \cdot |X - X_{worst}|
+\end{equation}
+
+% 公式4-21：滚球递减因子
+\textbf{公式4-21：滚球递减因子}
+\begin{equation}
+\alpha = 1 - \frac{t}{T_{max}}
+\end{equation}
+
+% 公式4-22：繁殖行为
+\textbf{公式4-22：繁殖行为}
+\begin{equation}
+X_{new} = X_{best} + \beta_1 \cdot |X - X_{local\_best}|
+\end{equation}
+
+% 公式4-23：觅食行为
+\textbf{公式4-23：觅食行为}
+\begin{equation}
+X_{new} = X_{best} + C_1 \cdot (X - lb) + C_2 \cdot (X - ub)
+\end{equation}
+
+% 公式4-24：偷窃行为
+\textbf{公式4-24：偷窃行为}
+\begin{equation}
+X_{new} = X_{local\_best} + \tan(\theta) \cdot |X - X_{local\_best}|
+\end{equation}
+
+\subsection{4.2.4 RDHO融合机制}
+
+% 公式4-25：双源混合初始化
+\textbf{公式4-25：双源混合初始化}
+\begin{equation}
+X_i = \begin{cases}
+\mathcal{N}(\mu, \sigma^2), & \text{前50\%个体（高斯分布）} \\
+\mathcal{U}(lb, ub), & \text{后50\%个体（均匀分布）}
+\end{cases}
+\end{equation}
+
+% 公式4-26：生产者融合更新
+\textbf{公式4-26：生产者融合更新}
+\begin{equation}
+X_{new} = w \cdot X_{RIME} + (1 - w) \cdot X_{DBO}
+\end{equation}
+
+% 公式4-27：自适应融合权重
+\textbf{公式4-27：自适应融合权重}
+\begin{equation}
+w = 0.5 + 0.3 \cdot \cos\left(\frac{\pi \cdot t}{T_{max}}\right)
+\end{equation}
+
+% 公式4-28：跟随者条件切换
+\textbf{公式4-28：跟随者条件切换}
+\begin{equation}
+X_{new} = \begin{cases}
+\text{RIME硬凝华穿刺}, & \text{if } rand < E \\
+\text{DBO觅食}, & \text{otherwise}
+\end{cases}
+\end{equation}
+
+% 公式4-29：侦察者更新
+\textbf{公式4-29：侦察者更新}
+\begin{equation}
+X_{new} = \begin{cases}
+\text{DBO偷窃}, & \text{if } f(X) > f(X_{best}) \\
+X_{best} + scale \cdot X_{best} \cdot Cauchy(), & \text{otherwise}
+\end{cases}
+\end{equation}
+
+% 公式4-30：Cauchy变异尺度
+\textbf{公式4-30：Cauchy变异尺度}
+\begin{equation}
+scale = 0.1 \cdot \left(1 - \frac{t}{T_{max}}\right)
+\end{equation}
+
+% 公式4-31：动态分层惩罚
+\textbf{公式4-31：动态分层惩罚}
+\begin{equation}
+penalty = base\_penalty \cdot (1 + 2 \cdot progress)^{\alpha}
+\end{equation}
+
+% 公式4-32：搜索进度
+\textbf{公式4-32：搜索进度}
+\begin{equation}
+progress = \frac{t}{T_{max}}
+\end{equation}
+
+\subsection{4.2.6 算法时间复杂度分析}
+
+% 公式4-33：时间复杂度
+\textbf{公式4-33：时间复杂度}
+\begin{equation}
+O(T_{max} \cdot N \cdot (K + \log N))
+\end{equation}
+
+\textbf{demo}
+\begin{equation}
+E = 2 \cdot \exp\left(-\left(\frac{4t}{T_{max}}\right)^2\right)
+\end{equation}
+
+\end{document}

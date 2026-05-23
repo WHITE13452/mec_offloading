@@ -10,7 +10,83 @@ from ..algorithms.ga import GA
 from ..algorithms.gwo import GWO
 import matplotlib.pyplot as plt
 from src.utils.plotting_utils import init_plotting_style
-init_plotting_style()
+# init_plotting_style()
+
+# 全局变量控制是否使用英文标签
+USE_ENGLISH_LABELS = True
+
+# 设置全局字体和字号 - 增大字号以匹配文档样式
+FONT_SIZE_TITLE = 26    # 标题字体
+FONT_SIZE_LABEL = 24    # 轴标签字体
+FONT_SIZE_TICK = 22     # 刻度字体
+FONT_SIZE_LEGEND = 22   # 图例字体
+FONT_SIZE_TEXT = 22     # 文本标注字体
+
+# 根据提供的RGB值设置颜色
+COLORS = [
+    (19/255, 33/255, 60/255),    # 深蓝色 R:019, G:033, B:060
+    (252/255, 163/255, 17/255),  # 黄色 R:252, G:163, B:017
+    (136/255, 179/255, 214/255), # 浅蓝色 R:136, G:179, B:214
+    (200/255, 97/255, 52/255),   # 棕红色 R:200, G:097, B:052
+]
+
+# 不同的填充样式，适合黑白打印
+HATCHES = ['/', '\\', 'x', '+', 'o', 'O', '.', '*']
+
+# 标签字典
+LABELS = {
+    'zh': {
+        'convergence_title': '算法收敛曲线对比',
+        'iterations': '迭代次数',
+        'fitness': '适应度值',
+        'algorithm': '算法',
+        'task_allocation': '任务分配对比',
+        'num_tasks': '任务数量',
+        'device': '设备',
+        'edge': '边缘',
+        'cloud': '云端',
+        'energy_comparison': '能耗对比',
+        'total_energy': '总能耗 (J)',
+        'response_time': '延迟对比',
+        'total_delay': '总延迟 (s)',
+        'violation_rate': '延迟违规率 (%)',
+        'fitness_distribution': '适应度值分布对比'
+    },
+    'en': {
+        'convergence_title': 'Algorithm Convergence Comparison',
+        'iterations': 'Iterations',
+        'fitness': 'Fitness Value',
+        'algorithm': 'Algorithm',
+        'task_allocation': 'Task Allocation Comparison',
+        'num_tasks': 'Number of Tasks',
+        'device': 'Device',
+        'edge': 'Edge', 
+        'cloud': 'Cloud',
+        'energy_comparison': 'Energy Consumption Comparison',
+        'total_energy': 'Total Energy Consumption (J)',
+        'response_time': 'Response Time Comparison',
+        'total_delay': 'Total Delay (s)',
+        'violation_rate': 'Delay Violation Rate (%)',
+        'fitness_distribution': 'Fitness Value Distribution'
+    }
+}
+
+def setup_plot_style():
+    """设置绘图样式为Times New Roman字体"""
+    plt.rcParams['font.family'] = 'Times New Roman'
+    plt.rcParams['mathtext.fontset'] = 'cm'  # 使用Computer Modern字体作为数学公式字体
+    plt.rcParams['axes.titlesize'] = FONT_SIZE_TITLE
+    plt.rcParams['axes.labelsize'] = FONT_SIZE_LABEL
+    plt.rcParams['xtick.labelsize'] = FONT_SIZE_TICK
+    plt.rcParams['ytick.labelsize'] = FONT_SIZE_TICK
+    plt.rcParams['legend.fontsize'] = FONT_SIZE_LEGEND
+    plt.rcParams['figure.titlesize'] = FONT_SIZE_TITLE
+    plt.rcParams['figure.dpi'] = 300
+
+def get_label(key):
+    """获取标签文本"""
+    lang = 'en' if USE_ENGLISH_LABELS else 'zh'
+    return LABELS[lang].get(key, key)
 
 # 导入之前的系统创建函数
 from .realistic_system_setup import (
@@ -294,28 +370,72 @@ def analyze_task_type_allocation(system):
 
 def plot_convergence_curves(results, save_path='results/convergence_curves.png'):
     """绘制收敛曲线"""
-    plt.figure(figsize=(12, 8))
+    setup_plot_style()  # 应用Times New Roman字体
     
-    colors = ['blue', 'orange', 'green', 'red']
+    plt.figure(figsize=(15, 8))  # 增加图表尺寸
     
-    for i, (name, data) in enumerate(results.items()):
+    # 自定义线型和标记，提高黑白打印可区分性
+    linestyles = ['-', '--', '-.', ':']
+    markers = ['o', 's', '^', 'D']
+    
+    for idx, (name, data) in enumerate(results.items()):
         avg_history = data['avg_fitness_history']
         std_history = data['std_fitness_history']
         
         x = np.arange(len(avg_history))
-        color = colors[i % len(colors)]
+        color = COLORS[idx % len(COLORS)]
         
-        plt.plot(x, avg_history, label=name, color=color, linewidth=2)
+        # 使用标记点增强黑白打印识别度，但不是每个点都标记
+        mark_every = max(1, len(x) // 15)  # 每15个点标记一次
+        
+        plt.plot(x, avg_history, 
+                label=name, 
+                color=color,
+                linestyle=linestyles[idx % len(linestyles)],
+                marker=markers[idx % len(markers)],
+                markevery=mark_every,
+                linewidth=2.5)
+        
+        # 添加带纹理的填充区域
         plt.fill_between(x, avg_history - std_history, avg_history + std_history, 
-                        alpha=0.2, color=color)
+                       alpha=0.15, color=color, hatch=HATCHES[idx % len(HATCHES)])
     
-    plt.xlabel('迭代次数', fontsize=12)
-    plt.ylabel('适应度值', fontsize=12)
-    plt.title('不同算法的收敛曲线对比', fontsize=14)
-    plt.legend(fontsize=11)
+    plt.xlabel(get_label('iterations'), fontsize=FONT_SIZE_LABEL)
+    plt.ylabel(get_label('fitness'), fontsize=FONT_SIZE_LABEL)
+    plt.title(get_label('convergence_title'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    plt.legend(fontsize=FONT_SIZE_LEGEND, loc='upper right')
     plt.grid(True, alpha=0.3)
+    plt.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK)
     
-    # 保存图片
+    # 调整y轴范围，使曲线更清晰
+    y_min = min([min(data['avg_fitness_history']) for data in results.values()])
+    y_max = max([max(data['avg_fitness_history'][:20]) for data in results.values()])  # 只看前20次迭代的最大值
+    plt.ylim(y_min * 0.9, y_max * 1.1)
+    
+    # 添加局部放大图
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+    axins = inset_axes(plt.gca(), width="30%", height="40%", loc='center right',
+                      bbox_to_anchor=(0, 0, 1, 1), bbox_transform=plt.gca().transAxes)
+    
+    # 放大最后50次迭代
+    start_idx = max(0, len(x) - 50)
+    for idx, (name, data) in enumerate(results.items()):
+        avg_history = data['avg_fitness_history']
+        color = COLORS[idx % len(COLORS)]
+        
+        # 在放大图中也使用标记和线型
+        axins.plot(x[start_idx:], avg_history[start_idx:], 
+                  color=color, 
+                  linestyle=linestyles[idx % len(linestyles)],
+                  marker=markers[idx % len(markers)],
+                  markevery=max(1, len(x[start_idx:]) // 5),
+                  linewidth=1.5)
+    
+    axins.grid(True, alpha=0.3)
+    axins.set_xlim(x[start_idx], x[-1])
+    axins.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK-2)
+    
+    plt.tight_layout()
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
@@ -324,6 +444,8 @@ def plot_convergence_curves(results, save_path='results/convergence_curves.png')
 
 def plot_task_allocation_comparison(results, system, save_path='results/task_allocation_comparison.png'):
     """绘制任务分配对比图"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
     algorithms = list(results.keys())
     allocations = []
     
@@ -336,39 +458,78 @@ def plot_task_allocation_comparison(results, system, save_path='results/task_all
         allocation = analyze_task_allocation(system)
         allocations.append(allocation)
     
-    # 创建堆积柱状图
-    device_counts = [alloc['device'] for alloc in allocations]
-    edge_counts = [alloc['edge'] for alloc in allocations]
-    cloud_counts = [alloc['cloud'] for alloc in allocations]
-    
-    fig, ax = plt.subplots(figsize=(10, 6))
+    # 创建图表 - 增加高度以容纳顶部图例
+    fig, ax = plt.subplots(figsize=(10, 13))
     
     x = np.arange(len(algorithms))
     width = 0.6
     
-    p1 = ax.bar(x, device_counts, width, label='设备', color='lightblue')
-    p2 = ax.bar(x, edge_counts, width, bottom=device_counts, label='边缘', color='lightgreen')
-    p3 = ax.bar(x, cloud_counts, width, bottom=np.array(device_counts) + np.array(edge_counts), 
-                label='云端', color='lightcoral')
+    # 堆积柱状图数据
+    device_counts = [alloc['device'] for alloc in allocations]
+    edge_counts = [alloc['edge'] for alloc in allocations]
+    cloud_counts = [alloc['cloud'] for alloc in allocations]
     
-    ax.set_xlabel('算法')
-    ax.set_ylabel('任务数量')
-    ax.set_title('不同算法的任务分配对比')
+    # 使用不同颜色和纹理的柱状图
+    p1 = ax.bar(x, device_counts, width, 
+               label=get_label('device'), 
+               color=COLORS[0], 
+               edgecolor='black',
+               linewidth=2,
+               hatch=HATCHES[0])
+               
+    p2 = ax.bar(x, edge_counts, width, 
+               bottom=device_counts, 
+               label=get_label('edge'), 
+               color=COLORS[1],
+               edgecolor='black',
+               linewidth=2, 
+               hatch=HATCHES[1])
+               
+    p3 = ax.bar(x, cloud_counts, width, 
+               bottom=np.array(device_counts) + np.array(edge_counts), 
+               label=get_label('cloud'), 
+               color=COLORS[2],
+               edgecolor='black',
+               linewidth=2,
+               hatch=HATCHES[2])
+    
+    ax.set_xlabel(get_label('algorithm'), fontsize=FONT_SIZE_LABEL)
+    ax.set_ylabel(get_label('num_tasks'), fontsize=FONT_SIZE_LABEL)
+    ax.set_title(get_label('task_allocation'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
     ax.set_xticks(x)
-    ax.set_xticklabels(algorithms)
-    ax.legend()
+    ax.set_xticklabels(algorithms, fontsize=FONT_SIZE_TICK)
+    ax.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
     
-    # 添加数值标签
+    # 修改图例位置 - 放在图表上方，并水平排列
+    ax.legend(
+        loc='upper center',
+        bbox_to_anchor=(0.5, 1.15),
+        ncol=3,
+        fontsize=FONT_SIZE_LEGEND,
+        frameon=True,
+        framealpha=1.0,
+        fancybox=True,
+        shadow=False,
+    )
+    
+    # 添加数值标签（加粗以增强黑白打印效果）
     for i, (device, edge, cloud) in enumerate(zip(device_counts, edge_counts, cloud_counts)):
-        total = device + edge + cloud
         if device > 0:
-            ax.text(i, device/2, str(device), ha='center', va='center')
+            ax.text(i, device/2, str(device), ha='center', va='center', 
+                   fontweight='bold', fontsize=FONT_SIZE_TEXT-2)
         if edge > 0:
-            ax.text(i, device + edge/2, str(edge), ha='center', va='center')
+            ax.text(i, device + edge/2, str(edge), ha='center', va='center', 
+                   fontweight='bold', fontsize=FONT_SIZE_TEXT-2)
         if cloud > 0:
-            ax.text(i, device + edge + cloud/2, str(cloud), ha='center', va='center')
+            ax.text(i, device + edge + cloud/2, str(cloud), ha='center', va='center', 
+                   fontweight='bold', fontsize=FONT_SIZE_TEXT-2)
     
+    plt.grid(True, alpha=0.3, axis='y')
+    
+    # 使用更大的上边距确保图例不被截断
     plt.tight_layout()
+    plt.subplots_adjust(top=0.88)
+    
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
@@ -377,6 +538,8 @@ def plot_task_allocation_comparison(results, system, save_path='results/task_all
 
 def plot_performance_metrics_comparison(results, system, save_path='results/performance_metrics.png'):
     """绘制性能指标对比图"""
+    setup_plot_style()  # 应用Times New Roman字体
+    
     delay_model = DelayModel(system)
     energy_model = EnergyModel(system)
     
@@ -409,63 +572,118 @@ def plot_performance_metrics_comparison(results, system, save_path='results/perf
         metrics['delay'].append(total_delay)
         metrics['violation_rate'].append(delay_violations / len(system.tasks) * 100)
     
-    # 创建子图
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
+    # 创建子图布局
+    fig = plt.figure(figsize=(16, 14))  # 增加高度
+    grid = plt.GridSpec(2, 2, figure=fig, wspace=0.3, hspace=0.4)
+    
+    ax1 = fig.add_subplot(grid[0, 0])
+    ax2 = fig.add_subplot(grid[0, 1])
+    ax3 = fig.add_subplot(grid[1, 0])
+    ax4 = fig.add_subplot(grid[1, 1])
     
     x = np.arange(len(algorithms))
+    width = 0.7
     
-    # 1. 总能耗对比
-    bars1 = ax1.bar(x, metrics['energy'], color='skyblue', alpha=0.7)
-    ax1.set_xlabel('算法')
-    ax1.set_ylabel('总能耗 (J)')
-    ax1.set_title('总能耗对比')
+    # 1. 总能耗对比 - 调整y轴上限，为数值标签留出空间
+    max_energy = max(metrics['energy'])
+    bars1 = ax1.bar(x, metrics['energy'], width=width, color=COLORS[0], alpha=0.8, 
+                   edgecolor='black', linewidth=2, hatch=HATCHES[0])
+    ax1.set_xlabel(get_label('algorithm'), fontsize=FONT_SIZE_LABEL)
+    ax1.set_ylabel(get_label('total_energy'), fontsize=FONT_SIZE_LABEL)
+    ax1.set_title(get_label('energy_comparison'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
     ax1.set_xticks(x)
-    ax1.set_xticklabels(algorithms)
+    ax1.set_xticklabels(algorithms, fontsize=FONT_SIZE_TICK)
+    ax1.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
+    ax1.grid(True, alpha=0.3, axis='y')
+    # 设置y轴上限，留出20%的空间显示数值标签
+    ax1.set_ylim(0, max_energy * 1.2)
     
     # 添加数值标签
     for bar, value in zip(bars1, metrics['energy']):
-        ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(metrics['energy'])*0.01,
-                f'{value:.3f}', ha='center', va='bottom', fontsize=9)
+        ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + (max_energy * 0.02),
+                f'{value:.1f}', ha='center', va='bottom', 
+                fontweight='bold', fontsize=FONT_SIZE_TEXT-4)
     
-    # 2. 总延迟对比
-    bars2 = ax2.bar(x, metrics['delay'], color='lightgreen', alpha=0.7)
-    ax2.set_xlabel('算法')
-    ax2.set_ylabel('总延迟 (s)')
-    ax2.set_title('总延迟对比')
+    # 2. 总延迟对比 - 调整y轴上限
+    max_delay = max(metrics['delay'])
+    bars2 = ax2.bar(x, metrics['delay'], width=width, color=COLORS[1], alpha=0.8,
+                   edgecolor='black', linewidth=2, hatch=HATCHES[1])
+    ax2.set_xlabel(get_label('algorithm'), fontsize=FONT_SIZE_LABEL)
+    ax2.set_ylabel(get_label('total_delay'), fontsize=FONT_SIZE_LABEL)
+    ax2.set_title(get_label('response_time'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
     ax2.set_xticks(x)
-    ax2.set_xticklabels(algorithms)
+    ax2.set_xticklabels(algorithms, fontsize=FONT_SIZE_TICK)
+    ax2.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
+    ax2.grid(True, alpha=0.3, axis='y')
+    # 设置y轴上限，留出20%的空间显示数值标签
+    ax2.set_ylim(0, max_delay * 1.2)
     
     for bar, value in zip(bars2, metrics['delay']):
-        ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(metrics['delay'])*0.01,
-                f'{value:.3f}', ha='center', va='bottom', fontsize=9)
+        ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + (max_delay * 0.02),
+                f'{value:.1f}', ha='center', va='bottom', 
+                fontweight='bold', fontsize=FONT_SIZE_TEXT-4)
     
-    # 3. 延迟违规率对比
-    bars3 = ax3.bar(x, metrics['violation_rate'], color='lightcoral', alpha=0.7)
-    ax3.set_xlabel('算法')
-    ax3.set_ylabel('延迟违规率 (%)')
-    ax3.set_title('延迟违规率对比')
+    # 3. 延迟违规率对比 - 调整y轴上限
+    max_violation = max(metrics['violation_rate'])
+    bars3 = ax3.bar(x, metrics['violation_rate'], width=width, color=COLORS[2], alpha=0.8,
+                   edgecolor='black', linewidth=2, hatch=HATCHES[2])
+    ax3.set_xlabel(get_label('algorithm'), fontsize=FONT_SIZE_LABEL)
+    ax3.set_ylabel(get_label('violation_rate'), fontsize=FONT_SIZE_LABEL)
+    ax3.set_title(get_label('violation_rate'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
     ax3.set_xticks(x)
-    ax3.set_xticklabels(algorithms)
+    ax3.set_xticklabels(algorithms, fontsize=FONT_SIZE_TICK)
+    ax3.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
+    ax3.grid(True, alpha=0.3, axis='y')
+    # 设置y轴上限，留出20%的空间显示数值标签
+    ax3.set_ylim(0, max(100, max_violation * 1.2))  # 确保不超过100%
     
     for bar, value in zip(bars3, metrics['violation_rate']):
-        ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(metrics['violation_rate'])*0.01,
-                f'{value:.1f}%', ha='center', va='bottom', fontsize=9)
+        ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + (max_violation * 0.02),
+                f'{value:.1f}%', ha='center', va='bottom', 
+                fontweight='bold', fontsize=FONT_SIZE_TEXT-4)
     
     # 4. 适应度值对比（箱线图）
     fitness_data = [data['best_fitness_values'] for data in results.values()]
-    box_plot = ax4.boxplot(fitness_data, labels=algorithms, patch_artist=True)
+    bp = ax4.boxplot(fitness_data, labels=algorithms, patch_artist=True, widths=0.6)
     
-    colors = ['lightblue', 'orange', 'lightgreen', 'lightcoral']
-    for patch, color in zip(box_plot['boxes'], colors):
-        patch.set_facecolor(color)
+    # 添加不同的填充样式以便黑白打印识别
+    for i, patch in enumerate(bp['boxes']):
+        patch.set_facecolor(COLORS[i % len(COLORS)])
         patch.set_alpha(0.7)
+        patch.set_hatch(HATCHES[i % len(HATCHES)])
+        patch.set_edgecolor('black')
+        patch.set_linewidth(2)
     
-    ax4.set_xlabel('算法')
-    ax4.set_ylabel('适应度值')
-    ax4.set_title('适应度值分布对比')
-    ax4.grid(True, alpha=0.3)
+    # 设置其他元素为黑色
+    for element in ['whiskers', 'caps', 'medians']:
+        for item in bp[element]:
+            item.set_color('black')
+            item.set_linewidth(2 if element == 'medians' else 1.5)
+            
+    for flier in bp['fliers']:
+        flier.set_markeredgecolor('black')
+        flier.set_markerfacecolor('white')
+        flier.set_markersize(8)
     
+    ax4.set_xlabel(get_label('algorithm'), fontsize=FONT_SIZE_LABEL)
+    ax4.set_ylabel(get_label('fitness'), fontsize=FONT_SIZE_LABEL)
+    ax4.set_title(get_label('fitness_distribution'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    ax4.grid(True, alpha=0.3, axis='y')
+    ax4.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK)
+    
+    # 获取y轴的当前限制并扩展
+    y_min, y_max = ax4.get_ylim()
+    ax4.set_ylim(y_min, y_max * 1.15)  # 增加15%的顶部空间
+    
+    # 添加平均值标记 - 使用红色五角星
+    for i, d in enumerate(fitness_data):
+        ax4.plot(i+1, np.mean(d), marker='*', markersize=16, 
+                markeredgecolor='black', markerfacecolor='red', markeredgewidth=2)
+    
+    # 调整布局，确保足够的空间
     plt.tight_layout()
+    plt.subplots_adjust(top=0.92, bottom=0.08)  # 增加上下边距
+    
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()

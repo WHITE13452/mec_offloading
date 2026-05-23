@@ -224,7 +224,7 @@ def plot_task_allocation_simple_fixed(results, system_config, save_dir):
     plt.grid(True, alpha=0.3, axis='y')
     
     # 使用更大的上边距确保图例不被截断
-    plt.subplots_adjust(top=0.80)  # 增加顶部边距
+    plt.subplots_adjust(top=0.8)  # 增加顶部边距
     
     # 保存图表
     plt.savefig(os.path.join(save_dir, 'task_allocation_comparison.png'), dpi=300, bbox_inches='tight')

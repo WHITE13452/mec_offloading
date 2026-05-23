@@ -8,6 +8,68 @@ import matplotlib.pyplot as plt
 from src.utils.plotting_utils import init_plotting_style
 init_plotting_style()
 
+# ============ 添加统一的样式定义 ============
+# 全局变量控制是否使用英文标签
+USE_ENGLISH_LABELS = True
+
+# 设置全局字体和字号 - 增大字号以匹配文档样式
+FONT_SIZE_TITLE = 26    # 标题字体
+FONT_SIZE_LABEL = 24    # 轴标签字体
+FONT_SIZE_TICK = 22     # 刻度字体
+FONT_SIZE_LEGEND = 22   # 图例字体
+FONT_SIZE_TEXT = 22     # 文本标注字体
+
+# 根据提供的RGB值设置颜色
+COLORS = [
+    (19/255, 33/255, 60/255),    # 深蓝色 R:019, G:033, B:060
+    (252/255, 163/255, 17/255),  # 黄色 R:252, G:163, B:017
+    (136/255, 179/255, 214/255), # 浅蓝色 R:136, G:179, B:214
+    (200/255, 97/255, 52/255),   # 棕红色 R:200, G:097, B:052
+]
+
+# 不同的填充样式，适合黑白打印
+HATCHES = ['/', '\\', 'x', '+', 'o', 'O', '.', '*']
+
+# 标签字典
+LABELS = {
+    'zh': {
+        'task_type_distribution': '任务类型分布',
+        'task_data_size': '任务数据大小分布',
+        'task_complexity': '任务计算复杂度分布',
+        'task_delay_req': '任务延迟要求分布',
+        'node_computing': '节点计算能力',
+        'network_rates': '网络传输速率',
+        'energy_params': '能耗参数',
+    },
+    'en': {
+        'task_type_distribution': 'Task Type Distribution',
+        'task_data_size': 'Task Data Size Distribution',
+        'task_complexity': 'Task Compute Complexity Distribution',
+        'task_delay_req': 'Task Delay Requirement Distribution',
+        'node_computing': 'Node Computing Capability',
+        'network_rates': 'Network Transmission Rates',
+        'energy_params': 'Energy Consumption Parameters',
+    }
+}
+
+def setup_plot_style():
+    """设置绘图样式为Times New Roman字体"""
+    plt.rcParams['font.family'] = 'Times New Roman'
+    plt.rcParams['mathtext.fontset'] = 'cm'  # 使用Computer Modern字体作为数学公式字体
+    plt.rcParams['axes.titlesize'] = FONT_SIZE_TITLE
+    plt.rcParams['axes.labelsize'] = FONT_SIZE_LABEL
+    plt.rcParams['xtick.labelsize'] = FONT_SIZE_TICK
+    plt.rcParams['ytick.labelsize'] = FONT_SIZE_TICK
+    plt.rcParams['legend.fontsize'] = FONT_SIZE_LEGEND
+    plt.rcParams['figure.titlesize'] = FONT_SIZE_TITLE
+    plt.rcParams['figure.dpi'] = 300
+
+def get_label(key):
+    """获取标签文本"""
+    lang = 'en' if USE_ENGLISH_LABELS else 'zh'
+    return LABELS[lang].get(key, key)
+# ============ 样式定义结束 ============
+
 
 def create_realistic_edge_computing_system(num_devices=15, num_edge_servers=4, num_cloud_servers=2, num_tasks=30):
     """创建现实的边缘计算系统，让卸载具有明显优势"""
@@ -183,6 +245,40 @@ def create_realistic_edge_computing_system(num_devices=15, num_edge_servers=4, n
             cloud_server.arrival_rates[task.task_id] = np.random.uniform(0.005, 0.02)
     
     return system
+
+
+# 使用示例和测试函数
+def main():
+    """测试新的系统设计"""
+    # 创建基础系统
+    print("创建现实边缘计算系统...")
+    system = create_realistic_edge_computing_system()
+    
+    # 绘制系统特征
+    plot_task_characteristics(system)
+    plot_device_capabilities(system)
+    
+    # 分析任务执行可行性
+    print("分析任务执行可行性...")
+    analysis_results = analyze_task_execution_feasibility(system)
+    print_feasibility_analysis(analysis_results)
+    
+    # 测试不同场景
+    print("\n" + "="*80)
+    print("测试电池受限场景...")
+    battery_system = create_battery_constrained_scenario(system)
+    battery_analysis = analyze_task_execution_feasibility(battery_system)
+    print_feasibility_analysis(battery_analysis)
+    
+    print("\n" + "="*80)
+    print("测试计算密集型场景...")
+    compute_system = create_computation_heavy_scenario(system)
+    compute_analysis = analyze_task_execution_feasibility(compute_system)
+    print_feasibility_analysis(compute_analysis)
+
+
+if __name__ == "__main__":
+    main()
 
 
 def create_battery_constrained_scenario(base_system):
@@ -376,177 +472,221 @@ def print_feasibility_analysis(analysis_results):
 
 
 def plot_task_characteristics(system, save_path='results/task_characteristics.png'):
-    """绘制任务特征分布图"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+    """绘制任务特征图"""
+    setup_plot_style()  # 应用Times New Roman字体
     
-    # 提取任务数据
-    task_types = [get_task_type(task) for task in system.tasks]
-    data_sizes = [task.data_size / 1e6 for task in system.tasks]  # 转换为MB
-    complexities = [task.computation_complexity for task in system.tasks]
-    max_delays = [task.max_delay for task in system.tasks]
+    fig = plt.figure(figsize=(16, 12))
     
-    # 1. 任务类型分布
-    type_counts = {}
-    for t_type in task_types:
-        type_counts[t_type] = type_counts.get(t_type, 0) + 1
+    # 任务类型分布
+    ax1 = plt.subplot(2, 2, 1)
+    task_types = []
+    for task in system.tasks:
+        task_types.append(get_task_type(task))
     
-    ax1.pie(type_counts.values(), labels=type_counts.keys(), autopct='%1.1f%%', startangle=90)
-    ax1.set_title('任务类型分布')
+    from collections import Counter
+    type_counts = Counter(task_types)
+    colors_pie = [COLORS[i % len(COLORS)] for i in range(len(type_counts))]
+    wedges, texts, autotexts = ax1.pie(type_counts.values(), labels=type_counts.keys(), 
+                                       autopct='%1.1f%%', colors=colors_pie,
+                                       textprops={'fontsize': FONT_SIZE_TEXT-2})
+    # 添加边框和图案
+    for i, wedge in enumerate(wedges):
+        wedge.set_edgecolor('black')
+        wedge.set_linewidth(2)
+        wedge.set_hatch(HATCHES[i % len(HATCHES)])
     
-    # 2. 数据大小分布
-    ax2.hist(data_sizes, bins=15, alpha=0.7, color='skyblue', edgecolor='black')
-    ax2.set_xlabel('数据大小 (MB)')
-    ax2.set_ylabel('任务数量')
-    ax2.set_title('任务数据大小分布')
+    ax1.set_title(get_label('task_type_distribution'), 
+                  fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    
+    # 任务数据量分布
+    ax2 = plt.subplot(2, 2, 2)
+    data_sizes = [task.data_size / 1024 / 1024 for task in system.tasks]  # 转换为MB
+    ax2.hist(data_sizes, bins=15, alpha=0.7, color=COLORS[0], edgecolor='black', linewidth=2, hatch=HATCHES[0])
+    ax2.set_xlabel('Data Size (MB)', fontsize=FONT_SIZE_LABEL)
+    ax2.set_ylabel('Number of Tasks', fontsize=FONT_SIZE_LABEL)
+    ax2.set_title(get_label('task_data_size'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    ax2.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK)
     ax2.grid(True, alpha=0.3)
     
-    # 3. 计算复杂度分布
-    ax3.hist(complexities, bins=15, alpha=0.7, color='lightgreen', edgecolor='black')
-    ax3.set_xlabel('计算复杂度 (cycles/bit)')
-    ax3.set_ylabel('任务数量')
-    ax3.set_title('任务计算复杂度分布')
+    # 任务计算复杂度分布
+    ax3 = plt.subplot(2, 2, 3)
+    compute_complexities = [task.computation_complexity for task in system.tasks]  # cycles/bit
+    ax3.hist(compute_complexities, bins=15, alpha=0.7, color=COLORS[1], edgecolor='black', linewidth=2, hatch=HATCHES[1])
+    ax3.set_xlabel('Compute Complexity (cycles/bit)', fontsize=FONT_SIZE_LABEL)
+    ax3.set_ylabel('Number of Tasks', fontsize=FONT_SIZE_LABEL)
+    ax3.set_title(get_label('task_complexity'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    ax3.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK)
     ax3.grid(True, alpha=0.3)
     
-    # 4. 最大延迟分布
-    ax4.hist(max_delays, bins=15, alpha=0.7, color='lightcoral', edgecolor='black')
-    ax4.set_xlabel('最大延迟要求 (s)')
-    ax4.set_ylabel('任务数量')
-    ax4.set_title('任务最大延迟要求分布')
+    # 任务延迟要求分布
+    ax4 = plt.subplot(2, 2, 4)
+    delay_requirements = [task.max_delay for task in system.tasks]
+    ax4.hist(delay_requirements, bins=15, alpha=0.7, color=COLORS[2], edgecolor='black', linewidth=2, hatch=HATCHES[2])
+    ax4.set_xlabel('Max Delay Requirement (s)', fontsize=FONT_SIZE_LABEL)
+    ax4.set_ylabel('Number of Tasks', fontsize=FONT_SIZE_LABEL)
+    ax4.set_title(get_label('task_delay_req'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    ax4.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICK)
     ax4.grid(True, alpha=0.3)
     
     plt.tight_layout()
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
+    print(f"任务特征图已保存到: {save_path}")
 
 
 def plot_device_capabilities(system, save_path='results/device_capabilities.png'):
     """绘制设备能力分布图"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+    setup_plot_style()  # 应用Times New Roman字体
     
-    # 提取设备数据
-    device_freqs = [device.max_cpu_frequency / 1e9 for device in system.devices]  # 转换为GHz
-    device_energy_coeffs = [device.energy_coefficient * 1e27 for device in system.devices]  # 转换为合适单位
-    device_tx_powers = [device.transmission_power for device in system.devices]
+    fig = plt.figure(figsize=(16, 8))
     
-    # 提取边缘服务器数据
-    edge_freqs = [server.max_cpu_frequency / 1e9 for server in system.edge_servers]
-    edge_energy_coeffs = [server.energy_coefficient * 1e27 for server in system.edge_servers]
+    # 设备频率对比
+    ax1 = plt.subplot(1, 3, 1)
+    device_freqs = [d.max_cpu_frequency / 1e9 for d in system.devices]
+    edge_freqs = [e.max_cpu_frequency / 1e9 for e in system.edge_servers]
+    cloud_freqs = [c.max_cpu_frequency / 1e9 for c in system.cloud_servers]
     
-    # 提取云服务器数据
-    cloud_freqs = [server.max_cpu_frequency / 1e9 for server in system.cloud_servers]
-    cloud_energy_coeffs = [server.energy_coefficient * 1e27 for server in system.cloud_servers]
+    data = [device_freqs, edge_freqs, cloud_freqs]
+    positions = [1, 2, 3]
+    bp1 = ax1.boxplot(data, positions=positions, widths=0.6, patch_artist=True)
     
-    # 1. CPU频率比较
-    ax1.hist([device_freqs, edge_freqs, cloud_freqs], bins=10, alpha=0.7, 
-             label=['设备', '边缘服务器', '云服务器'], color=['lightblue', 'lightgreen', 'lightcoral'])
-    ax1.set_xlabel('CPU频率 (GHz)')
-    ax1.set_ylabel('数量')
-    ax1.set_title('不同节点CPU频率分布')
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
+    # 设置箱线图样式
+    for i, (patch, pos) in enumerate(zip(bp1['boxes'], positions)):
+        patch.set_facecolor(COLORS[i % len(COLORS)])
+        patch.set_alpha(0.7)
+        patch.set_hatch(HATCHES[i % len(HATCHES)])
+        patch.set_edgecolor('black')
+        patch.set_linewidth(2)
     
-    # 2. 能耗系数比较
-    ax2.hist([device_energy_coeffs, edge_energy_coeffs, cloud_energy_coeffs], bins=10, alpha=0.7,
-             label=['设备', '边缘服务器', '云服务器'], color=['lightblue', 'lightgreen', 'lightcoral'])
-    ax2.set_xlabel('能耗系数 (×10^-27)')
-    ax2.set_ylabel('数量')
-    ax2.set_title('不同节点能耗系数分布')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
+    for element in ['whiskers', 'caps', 'medians']:
+        for item in bp1[element]:
+            item.set_color('black')
+            item.set_linewidth(2 if element == 'medians' else 1.5)
     
-    # 3. 设备传输功率分布
-    ax3.hist(device_tx_powers, bins=10, alpha=0.7, color='skyblue', edgecolor='black')
-    ax3.set_xlabel('传输功率 (W)')
-    ax3.set_ylabel('设备数量')
-    ax3.set_title('设备传输功率分布')
-    ax3.grid(True, alpha=0.3)
+    ax1.set_xticklabels(['Device', 'Edge', 'Cloud'], fontsize=FONT_SIZE_TICK)
+    ax1.set_ylabel('CPU Frequency (GHz)', fontsize=FONT_SIZE_LABEL)
+    ax1.set_title(get_label('node_computing'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    ax1.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
+    ax1.grid(True, alpha=0.3, axis='y')
     
-    # 4. 计算能力对比
-    all_nodes = ['设备'] * len(device_freqs) + ['边缘'] * len(edge_freqs) + ['云端'] * len(cloud_freqs)
-    all_freqs = device_freqs + edge_freqs + cloud_freqs
+    # 传输速率对比 - 使用平均值
+    ax2 = plt.subplot(1, 3, 2)
     
-    # 箱线图显示计算能力差异
-    device_data = [device_freqs, edge_freqs, cloud_freqs]
-    ax4.boxplot(device_data, labels=['设备', '边缘服务器', '云服务器'])
-    ax4.set_ylabel('CPU频率 (GHz)')
-    ax4.set_title('节点计算能力对比')
-    ax4.grid(True, alpha=0.3)
+    # 计算平均传输速率
+    device_edge_rates = []
+    for (device_id, edge_id), rate in system.device_to_edge_rates.items():
+        device_edge_rates.append(rate / 1e6)  # 转换为 Mbps
+    avg_device_edge_rate = np.mean(device_edge_rates) if device_edge_rates else 0
+    
+    edge_cloud_rates = []
+    for (edge_id, cloud_id), rate in system.edge_to_cloud_rates.items():
+        edge_cloud_rates.append(rate / 1e6)  # 转换为 Mbps
+    avg_edge_cloud_rate = np.mean(edge_cloud_rates) if edge_cloud_rates else 0
+    
+    x = [1, 2]
+    bars = ax2.bar(x, [avg_device_edge_rate, avg_edge_cloud_rate], 
+                   color=[COLORS[0], COLORS[1]], alpha=0.8,
+                   edgecolor='black', linewidth=2)
+    
+    # 添加图案
+    for i, bar in enumerate(bars):
+        bar.set_hatch(HATCHES[i])
+    
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(['Device-Edge', 'Edge-Cloud'], fontsize=FONT_SIZE_TICK)
+    ax2.set_ylabel('Transmission Rate (Mbps)', fontsize=FONT_SIZE_LABEL)
+    ax2.set_title(get_label('network_rates'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    ax2.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
+    ax2.grid(True, alpha=0.3, axis='y')
+    
+    # 添加数值标签
+    for bar in bars:
+        height = bar.get_height()
+        ax2.text(bar.get_x() + bar.get_width()/2., height * 1.02,
+                f'{height:.1f}', ha='center', va='bottom',
+                fontweight='bold', fontsize=FONT_SIZE_TEXT-4)
+    
+    # 设备能耗参数对比
+    ax3 = plt.subplot(1, 3, 3)
+    device_powers = [d.energy_coefficient * 1e27 for d in system.devices]  # 转换为合适单位
+    edge_powers = [e.energy_coefficient * 1e27 for e in system.edge_servers]
+    cloud_powers = [c.energy_coefficient * 1e27 for c in system.cloud_servers]
+    
+    data = [device_powers, edge_powers, cloud_powers]
+    bp2 = ax3.boxplot(data, positions=positions, widths=0.6, patch_artist=True)
+    
+    # 设置箱线图样式
+    for i, (patch, pos) in enumerate(zip(bp2['boxes'], positions)):
+        patch.set_facecolor(COLORS[i % len(COLORS)])
+        patch.set_alpha(0.7)
+        patch.set_hatch(HATCHES[i % len(HATCHES)])
+        patch.set_edgecolor('black')
+        patch.set_linewidth(2)
+    
+    for element in ['whiskers', 'caps', 'medians']:
+        for item in bp2[element]:
+            item.set_color('black')
+            item.set_linewidth(2 if element == 'medians' else 1.5)
+    
+    ax3.set_xticklabels(['Device', 'Edge', 'Cloud'], fontsize=FONT_SIZE_TICK)
+    ax3.set_ylabel('Energy Coefficient (×10$^{-27}$)', fontsize=FONT_SIZE_LABEL)
+    ax3.set_title(get_label('energy_params'), fontsize=FONT_SIZE_TITLE, fontweight='bold', pad=15)
+    ax3.tick_params(axis='y', which='major', labelsize=FONT_SIZE_TICK)
+    ax3.grid(True, alpha=0.3, axis='y')
     
     plt.tight_layout()
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
+    print(f"设备能力图已保存到: {save_path}")
 
 
-# 使用示例和测试函数
-def main():
-    """测试新的系统设计"""
-    # 创建基础系统
-    print("创建现实边缘计算系统...")
-    system = create_realistic_edge_computing_system()
+# 继续添加缺失的函数
+def calculate_offload_necessity(analysis_results):
+    """计算卸载必要性统计"""
+    total_tasks = len(analysis_results)
+    must_offload = 0  # 必须卸载（本地不可行）
+    local_infeasible = 0  # 本地不可行
+    offload_better = 0  # 卸载更优（在满足约束条件下能耗或延迟更低）
     
-    # 绘制系统特征
-    plot_task_characteristics(system)
-    plot_device_capabilities(system)
-    
-    # 分析任务执行可行性
-    print("分析任务执行可行性...")
-    analysis_results = analyze_task_execution_feasibility(system)
-    print_feasibility_analysis(analysis_results)
-    
-    # 测试不同场景
-    print("\n" + "="*80)
-    print("测试电池受限场景...")
-    battery_system = create_battery_constrained_scenario(system)
-    battery_analysis = analyze_task_execution_feasibility(battery_system)
-    print_feasibility_analysis(battery_analysis)
-    
-    print("\n" + "="*80)
-    print("测试计算密集型场景...")
-    compute_system = create_computation_heavy_scenario(system)
-    compute_analysis = analyze_task_execution_feasibility(compute_system)
-    print_feasibility_analysis(compute_analysis)
-
-
-if __name__ == "__main__":
-    main()
-
-
-# 继续 src/experiments/realistic_system_setup.py
-
-def create_dynamic_workload_scenario(base_system, time_slots=24):
-    """创建动态工作负载场景 - 模拟一天中不同时段的负载变化"""
-    system = base_system
-    
-    # 为系统添加时间维度
-    system.time_slots = time_slots
-    system.current_time_slot = 0
-    
-    # 定义一天中的负载模式
-    # 早高峰 (7-9点)，午高峰 (12-14点)，晚高峰 (18-21点)
-    load_patterns = {
-        'compute_intensive': [0.5, 0.5, 0.5, 0.5, 0.5, 0.7, 0.9, 1.2, 1.0, 0.8, 0.7, 0.8,  # 0-11点
-                             1.1, 1.3, 1.0, 0.9, 0.8, 0.9, 1.4, 1.6, 1.5, 1.2, 0.9, 0.7], # 12-23点
-        'data_intensive': [0.3, 0.3, 0.3, 0.3, 0.4, 0.6, 0.8, 1.0, 0.9, 0.7, 0.6, 0.7,    # 0-11点
-                          1.2, 1.4, 1.1, 0.8, 0.7, 0.8, 1.0, 1.2, 1.3, 1.1, 0.8, 0.5],   # 12-23点
-        'realtime_sensitive': [0.2, 0.2, 0.2, 0.3, 0.5, 0.8, 1.2, 1.5, 1.3, 1.0, 0.9, 1.0, # 0-11点
-                              1.2, 1.1, 0.9, 0.8, 0.9, 1.3, 1.8, 2.0, 1.7, 1.4, 1.0, 0.6], # 12-23点
-        'lightweight': [0.8, 0.6, 0.4, 0.4, 0.6, 0.9, 1.3, 1.5, 1.4, 1.2, 1.1, 1.3,       # 0-11点
-                       1.5, 1.4, 1.2, 1.1, 1.2, 1.6, 1.9, 1.8, 1.6, 1.4, 1.2, 1.0]        # 12-23点
-    }
-    
-    # 为每个任务分配时变的到达率
-    for task in system.tasks:
-        task_type = get_task_type(task)
-        task.hourly_arrival_rates = []
+    for task_analysis in analysis_results:
+        device_option = task_analysis['execution_options']['device']
+        edge_option = task_analysis['execution_options']['edge']
+        cloud_option = task_analysis['execution_options']['cloud']
         
-        base_rate = task.arrival_rate
-        for hour in range(24):
-            multiplier = load_patterns.get(task_type, [1.0] * 24)[hour]
-            task.hourly_arrival_rates.append(base_rate * multiplier)
+        # 本地不可行
+        if not device_option['feasible']:
+            local_infeasible += 1
+            
+            # 边缘或云可行，则必须卸载
+            if edge_option['feasible'] or cloud_option['feasible']:
+                must_offload += 1
+        
+        # 本地可行但卸载更优
+        elif device_option['feasible']:
+            device_cost = device_option['energy'] + device_option['delay']
+            
+            if edge_option['feasible']:
+                edge_cost = edge_option['energy'] + edge_option['delay']
+                if edge_cost < device_cost * 0.8:  # 卸载成本低20%以上
+                    offload_better += 1
+                    continue
+            
+            if cloud_option['feasible']:
+                cloud_cost = cloud_option['energy'] + cloud_option['delay']
+                if cloud_cost < device_cost * 0.8:  # 卸载成本低20%以上
+                    offload_better += 1
     
-    return system
+    return {
+        'total': total_tasks,
+        'must_offload': must_offload,
+        'local_infeasible': local_infeasible,
+        'offload_better': offload_better,
+        'must_offload_rate': (must_offload / total_tasks) * 100,
+        'local_infeasible_rate': (local_infeasible / total_tasks) * 100,
+        'offload_better_rate': (offload_better / total_tasks) * 100
+    }
 
 
 def create_resource_contention_scenario(base_system):
@@ -616,305 +756,3 @@ def create_network_congestion_scenario(base_system, congestion_factor=0.3):
         system.edge_to_cloud_rates[link] *= np.random.uniform(0.3, 0.6)  # 降低40-70%
     
     return system
-
-
-def enhanced_feasibility_analysis(system, scenarios=None):
-    """增强的可行性分析 - 包含多种场景"""
-    if scenarios is None:
-        scenarios = ['base']
-    
-    all_results = {}
-    
-    for scenario_name in scenarios:
-        print(f"\n{'='*80}")
-        print(f"分析场景: {scenario_name.upper()}")
-        print(f"{'='*80}")
-        
-        if scenario_name == 'base':
-            test_system = system
-        elif scenario_name == 'battery_constrained':
-            test_system = create_battery_constrained_scenario(system)
-        elif scenario_name == 'network_optimized':
-            test_system = create_network_optimized_scenario(system)
-        elif scenario_name == 'computation_heavy':
-            test_system = create_computation_heavy_scenario(system)
-        elif scenario_name == 'resource_contention':
-            test_system = create_resource_contention_scenario(system)
-        elif scenario_name == 'network_congestion':
-            test_system = create_network_congestion_scenario(system)
-        else:
-            test_system = system
-        
-        # 分析任务执行可行性
-        analysis_results = analyze_task_execution_feasibility(test_system)
-        all_results[scenario_name] = analysis_results
-        
-        # 打印分析结果
-        print_feasibility_analysis(analysis_results)
-        
-        # 计算关键统计信息
-        offload_necessity = calculate_offload_necessity(analysis_results)
-        print(f"\n卸载必要性分析:")
-        print(f"  必须卸载的任务: {offload_necessity['must_offload']}/{offload_necessity['total']} ({offload_necessity['must_offload_rate']:.1f}%)")
-        print(f"  本地不可行的任务: {offload_necessity['local_infeasible']}/{offload_necessity['total']} ({offload_necessity['local_infeasible_rate']:.1f}%)")
-        print(f"  卸载更优的任务: {offload_necessity['offload_better']}/{offload_necessity['total']} ({offload_necessity['offload_better_rate']:.1f}%)")
-    
-    return all_results
-
-
-def calculate_offload_necessity(analysis_results):
-    """计算卸载必要性统计"""
-    total_tasks = len(analysis_results)
-    must_offload = 0  # 必须卸载（本地不可行）
-    local_infeasible = 0  # 本地不可行
-    offload_better = 0  # 卸载更优（在满足约束条件下能耗或延迟更低）
-    
-    for task_analysis in analysis_results:
-        device_option = task_analysis['execution_options']['device']
-        edge_option = task_analysis['execution_options']['edge']
-        cloud_option = task_analysis['execution_options']['cloud']
-        
-        # 本地不可行
-        if not device_option['feasible']:
-            local_infeasible += 1
-            
-            # 边缘或云可行，则必须卸载
-            if edge_option['feasible'] or cloud_option['feasible']:
-                must_offload += 1
-        
-        # 本地可行但卸载更优
-        elif device_option['feasible']:
-            device_cost = device_option['energy'] + device_option['delay']
-            
-            if edge_option['feasible']:
-                edge_cost = edge_option['energy'] + edge_option['delay']
-                if edge_cost < device_cost * 0.8:  # 卸载成本低20%以上
-                    offload_better += 1
-                    continue
-            
-            if cloud_option['feasible']:
-                cloud_cost = cloud_option['energy'] + cloud_option['delay']
-                if cloud_cost < device_cost * 0.8:  # 卸载成本低20%以上
-                    offload_better += 1
-    
-    return {
-        'total': total_tasks,
-        'must_offload': must_offload,
-        'local_infeasible': local_infeasible,
-        'offload_better': offload_better,
-        'must_offload_rate': (must_offload / total_tasks) * 100,
-        'local_infeasible_rate': (local_infeasible / total_tasks) * 100,
-        'offload_better_rate': (offload_better / total_tasks) * 100
-    }
-
-
-def plot_scenario_comparison(all_results, save_path='results/scenario_comparison.png'):
-    """绘制不同场景下的任务分配可行性对比"""
-    scenarios = list(all_results.keys())
-    metrics = ['local_infeasible_rate', 'must_offload_rate', 'offload_better_rate']
-    metric_labels = ['本地不可行率 (%)', '必须卸载率 (%)', '卸载更优率 (%)']
-    
-    # 计算每个场景的统计数据
-    scenario_stats = {}
-    for scenario, results in all_results.items():
-        stats = calculate_offload_necessity(results)
-        scenario_stats[scenario] = stats
-    
-    # 绘制对比图
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-    
-    # 1. 柱状图对比
-    x = np.arange(len(scenarios))
-    width = 0.25
-    
-    for i, metric in enumerate(metrics):
-        values = [scenario_stats[scenario][metric] for scenario in scenarios]
-        ax1.bar(x + i * width, values, width, label=metric_labels[i], alpha=0.8)
-    
-    ax1.set_xlabel('场景')
-    ax1.set_ylabel('百分比 (%)')
-    ax1.set_title('不同场景下的任务卸载必要性对比')
-    ax1.set_xticks(x + width)
-    ax1.set_xticklabels([s.replace('_', '\n') for s in scenarios], rotation=45)
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
-    
-    # 2. 饼图显示基础场景的任务分配情况
-    base_stats = scenario_stats.get('base', scenario_stats[list(scenario_stats.keys())[0]])
-    
-    # 计算不同类型任务的数量
-    feasible_local = base_stats['total'] - base_stats['local_infeasible']
-    must_offload = base_stats['must_offload']
-    prefer_offload = base_stats['offload_better']
-    only_local = feasible_local - prefer_offload
-    
-    labels = ['只能本地执行', '本地更优', '卸载更优', '必须卸载']
-    sizes = [only_local, feasible_local - prefer_offload - must_offload, prefer_offload, must_offload]
-    colors = ['lightblue', 'lightgreen', 'orange', 'lightcoral']
-    
-    # 过滤掉0值
-    filtered_data = [(label, size, color) for label, size, color in zip(labels, sizes, colors) if size > 0]
-    if filtered_data:
-        labels_f, sizes_f, colors_f = zip(*filtered_data)
-        ax2.pie(sizes_f, labels=labels_f, autopct='%1.1f%%', colors=colors_f, startangle=90)
-    
-    ax2.set_title('基础场景任务执行偏好分布')
-    
-    plt.tight_layout()
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.close()
-
-
-def generate_experiment_config(system, config_name='realistic_config'):
-    """生成实验配置文件，便于复现实验"""
-    config = {
-        'system_name': config_name,
-        'devices': [],
-        'edge_servers': [],
-        'cloud_servers': [],
-        'tasks': [],
-        'device_to_edge_links': [],
-        'edge_to_cloud_links': []
-    }
-    
-    # 设备配置
-    for device in system.devices:
-        config['devices'].append({
-            'id': device.device_id,
-            'max_cpu_frequency': device.max_cpu_frequency,
-            'energy_coefficient': device.energy_coefficient,
-            'transmission_power': device.transmission_power
-        })
-    
-    # 边缘服务器配置
-    for server in system.edge_servers:
-        config['edge_servers'].append({
-            'id': server.server_id,
-            'max_cpu_frequency': server.max_cpu_frequency,
-            'energy_coefficient': server.energy_coefficient,
-            'transmission_power': server.transmission_power
-        })
-    
-    # 云服务器配置
-    for server in system.cloud_servers:
-        config['cloud_servers'].append({
-            'id': server.server_id,
-            'max_cpu_frequency': server.max_cpu_frequency,
-            'energy_coefficient': server.energy_coefficient
-        })
-    
-    # 任务配置
-    for task in system.tasks:
-        config['tasks'].append({
-            'id': task.task_id,
-            'data_size': task.data_size,
-            'computation_complexity': task.computation_complexity,
-            'arrival_rate': task.arrival_rate,
-            'priority': task.priority,
-            'max_delay': task.max_delay,
-            'source_device_id': task.source_device_id
-        })
-    
-    # 网络链路配置
-    for (device_id, edge_id), rate in system.device_to_edge_rates.items():
-        bandwidth = system.device_to_edge_bandwidth.get((device_id, edge_id), rate * 2)
-        config['device_to_edge_links'].append({
-            'device_id': device_id,
-            'edge_id': edge_id,
-            'rate': rate,
-            'bandwidth': bandwidth
-        })
-    
-    for (edge_id, cloud_id), rate in system.edge_to_cloud_rates.items():
-        bandwidth = system.edge_to_cloud_bandwidth.get((edge_id, cloud_id), rate * 2)
-        config['edge_to_cloud_links'].append({
-            'edge_id': edge_id,
-            'cloud_id': cloud_id,
-            'rate': rate,
-            'bandwidth': bandwidth
-        })
-    
-    return config
-
-
-def save_config_to_file(config, filename='configs/realistic_system_config.json'):
-    """保存配置到JSON文件"""
-    import json
-    
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(config, f, indent=2, ensure_ascii=False)
-    
-    print(f"配置已保存到: {filename}")
-
-
-# 完整的测试和分析主函数
-def comprehensive_analysis():
-    """进行全面的系统分析"""
-    print("="*100)
-    print("全面边缘计算系统分析")
-    print("="*100)
-    
-    # 1. 创建基础系统
-    print("\n1. 创建现实边缘计算系统...")
-    system = create_realistic_edge_computing_system(
-        num_devices=20, 
-        num_edge_servers=4, 
-        num_cloud_servers=2, 
-        num_tasks=40
-    )
-    
-    # 2. 绘制系统特征
-    print("\n2. 生成系统特征图...")
-    plot_task_characteristics(system)
-    plot_device_capabilities(system)
-    
-    # 3. 多场景分析
-    print("\n3. 进行多场景可行性分析...")
-    scenarios = [
-        'base',
-        'battery_constrained', 
-        'network_optimized',
-        'computation_heavy',
-        'resource_contention',
-        'network_congestion'
-    ]
-    
-    all_results = enhanced_feasibility_analysis(system, scenarios)
-    
-    # 4. 绘制场景对比
-    print("\n4. 生成场景对比图...")
-    plot_scenario_comparison(all_results)
-    
-    # 5. 生成配置文件
-    print("\n5. 生成实验配置文件...")
-    config = generate_experiment_config(system)
-    save_config_to_file(config)
-    
-    # 6. 推荐实验参数
-    print("\n6. 实验参数推荐:")
-    print("="*60)
-    
-    base_stats = calculate_offload_necessity(all_results['base'])
-    
-    print(f"基础系统统计:")
-    print(f"  总任务数: {base_stats['total']}")
-    print(f"  必须卸载任务: {base_stats['must_offload']} ({base_stats['must_offload_rate']:.1f}%)")
-    print(f"  卸载更优任务: {base_stats['offload_better']} ({base_stats['offload_better_rate']:.1f}%)")
-    
-    print(f"\n推荐的算法权重配置:")
-    print(f"  w_energy = 0.3-0.4 (能耗权重)")
-    print(f"  w_delay = 0.6-0.7 (延迟权重，因为有严格延迟约束)")
-    print(f"  hho_prob = 0.2-0.4 (HHO使用概率)")
-    
-    print(f"\n推荐的实验设置:")
-    print(f"  max_iter = 150-200 (足够的迭代次数)")
-    print(f"  population_size = 40-60 (平衡搜索能力和计算成本)")
-    print(f"  多次运行取平均 = 10-15次 (确保结果稳定性)")
-    
-    return system, all_results
-
-
-if __name__ == "__main__":
-    comprehensive_analysis()
